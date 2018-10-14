@@ -15,7 +15,10 @@ namespace Surface {
     using Times = std::vector<double>;
 
     // нахождение области покрытия группировкой
-    Surf compute(const std::vector<Grid::Point>& centroids,
+//    Surf compute(const std::vector<Grid::Point>& centroids,
+//                 const Orbits::Constellation& orbits,
+//                 const Settings::Sets& parameters = Settings::defaultParameters);
+    Surf compute(const Grid::Centroids& centroids,
                  const Orbits::Constellation& orbits,
                  const Settings::Sets& parameters = Settings::defaultParameters);
 //    Surf compute(const std::vector<Grid::Node>& centroids,
@@ -23,23 +26,23 @@ namespace Surface {
 //                 const Settings& settings);
 
     // поиск максимального времени ожидания
-//    double computeTime(const Grid::Centroids& centroids,
-//                       const Orbits::Constellation& orbits,
-//                       const Settings::Sets& parameters = Settings::defaultParameters);
-    double computeTime(const std::vector<Grid::Point>& centroids,
+    double computeTime(const Grid::Centroids& centroids,
                        const Orbits::Constellation& orbits,
                        const Settings::Sets& parameters = Settings::defaultParameters);
+//    double computeTime(const std::vector<Grid::Point>& centroids,
+//                       const Orbits::Constellation& orbits,
+//                       const Settings::Sets& parameters = Settings::defaultParameters);
 
     // максимальное время ожидания для каждой точки сетки
-    Times computeTimeFull(const std::vector<Grid::Point>& centroids,
+    Times computeTimeFull(const Grid::Centroids& centroids,
                           const Orbits::Constellation& orbits,
                           const Settings::Sets& parameters = Settings::defaultParameters);
 
-    double computeArea(const Grid::SphereGrid& sphereGrid,
-                       const Orbits::Constellation& orbits,
-                       const Settings::Sets& parameters = Settings::defaultParameters);
+//    double computeArea(const Grid::SphereGrid& sphereGrid,
+//                       const Orbits::Constellation& orbits,
+//                       const Settings::Sets& parameters = Settings::defaultParameters);
 
-    double sumArea(const Grid::SphereGrid& sphereGrid, const Surf& surface);
+    double sumArea(const Grid::Areas& areas, const Surf& surface);
 
     void writeToTextFile(const Surf& surface, const QString& filepath);
 }

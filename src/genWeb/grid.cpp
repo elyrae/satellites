@@ -205,6 +205,26 @@ Grid::SphereGrid Grid::readGrid(const std::pair<QString, QString> &files, bool *
     return sphereGrid;
 }
 
+Grid::Areas Grid::readAreas(const QString &file, bool *ok)
+{
+    QFile areasFile(file);
+    Grid::Areas areas;
+
+    areasFile.open(QIODevice::ReadOnly | QIODevice::Text);
+//    *ok = true;
+//    if (!areasFile.open(QIODevice::ReadOnly | QIODevice::Text))     *ok = false;
+//    if (!*ok)
+//        return areas;
+
+    QTextStream inAreas(&areasFile);
+    double area = 0.0;
+    while (!inAreas.atEnd()) {
+        inAreas >> area;
+        areas.push_back(area);
+    }
+    return areas;
+}
+
 //void Grid::writeGrid(const Grid::TriangularGrid &grid, const std::pair<std::string &file)
 //{
 //    QFile centroidsFile(files.first);
@@ -235,9 +255,9 @@ Grid::Centroids Grid::readCentroids(const QString &file, bool *ok)
 
     QTextStream inCentroids(&centroidsFile);
     double x = 0.0, y = 0.0, z = 0.0;
-    centroids.X.reserve(Grid::reserveLimit);
-    centroids.Y.reserve(Grid::reserveLimit);
-    centroids.Z.reserve(Grid::reserveLimit);
+    //centroids.X.reserve(Grid::reserveLimit);
+    //centroids.Y.reserve(Grid::reserveLimit);
+    //centroids.Z.reserve(Grid::reserveLimit);
     while (!inCentroids.atEnd()) {
         inCentroids >> x;
         inCentroids >> y;

@@ -317,7 +317,8 @@ void out_histogram()
 {
     // Чтение сетки
     bool ok = false;
-    Grid::SphereGrid sphereGrid = Grid::readGrid({"bigGridCentroids.txt", "bigGridAreas.txt"}, &ok);
+    //Grid::SphereGrid sphereGrid = Grid::readGrid({"gridCentr-small.txt", "gridAreas-small.txt"}, &ok);
+    Grid::Centroids centroids = Grid::readCentroids("gridCentr-small.txt", &ok);
     if (!ok)
         return;
 
@@ -327,40 +328,52 @@ void out_histogram()
 
     // Вычисление области покрытия и сохранение результата в файл для визуализации в Mathematica.
     Settings::Sets settings = Settings::readSettings("settings.ini");
-    settings.deltaT = 15.0;
+    Settings::printAlgorithmSettings(settings);
+    //settings.deltaT = 15.0;
     //SatelliteSurface::Surface surface = SatelliteSurface::compute(sphereGrid.centroids, orbits, parameters);
 
     QFile histoFile("hist_time.txt");
     histoFile.open(QIODevice::WriteOnly | QIODevice::Text);
     QTextStream outHist(&histoFile);
 
-    auto time_data = Surface::computeTimeFull(sphereGrid.centroids, orbits, settings);
+    auto timeData = Surface::computeTimeFull(centroids, orbits, settings);
 
-    outHist << "{";
-    for (size_t i = 0; i < time_data.size(); i++) {
-        outHist << "{" << sphereGrid.centroids[i][0] << "," << sphereGrid.centroids[i][1] << ","
-                << sphereGrid.centroids[i][2] << ","
-                << time_data[i] << /*( (i < time_data.size()-1) ? "," : "" ) <<*/ "}";
-        outHist << ((i < time_data.size() - 1) ? "," : "");
+    outHist.setRealNumberPrecision(6);
+    for (size_t i = 0; i < timeData.size(); i++) {
+        outHist << centroids.X[i] << " " << centroids.Y[i] << " " << centroids.Z[i] << " "
+                << timeData[i] << "\n";
     }
+    //    for (size_t i = 0; i < time_data.size(); i++) {
+//        outHist << "{" << centroids.X[i] << "," << centroids.Y[i] << ","
+//                << centroids.Z[i] << ","
+//                << time_data[i] << /*( (i < time_data.size()-1) ? "," : "" ) <<*/ "}";
+//        outHist << ((i < time_data.size() - 1) ? "," : "");
+//    }
+//    for (size_t i = 0; i < time_data.size(); i++) {
+//        outHist << time_data[i] << /*( (i < time_data.size()-1) ? "," : "" ) <<*/ "\n";
+//        //outHist << ((i < time_data.size() - 1) ? "," : "");
+//    }
         //outHist << time_data[i] << ( (i < time_data.size()-1) ? "," : "" );
-    outHist << "}";
+    //outHist << "}";
     histoFile.close();
 }
 
 int main(int, char **)
 {
-    //out_histogram();
+
     //new_time();
 
-    Examples::example_grid_generation();
-
+    //Examples::example_grid_generation();
+    // out_histogram();
     //test_int_sphere();
     //plot_int();
     //plot2d_mathematica();
     //plot2d_mathematica_area();
-    //Examples::swarm_optimisation();
-    Examples::example_surface_computation_circular();
+
+    Examples::swarm_optimisation();
+
+    //Examples::example_surface_computation_circular();
+
     //Examples::example_optimization();
     //Examples::example_surface_computation_elliptical();
     //example_surface_computation_circular();

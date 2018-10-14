@@ -11,17 +11,15 @@ inline double horizon(const double H, const double alpha)
     return (H*sin(alpha) < 1.0) ? cos(asin(H*sin(alpha)) - alpha) : (1.0 / H);
 }
 
-Surface::Surf Surface::compute(const std::vector<Grid::Point>& centroids,
+Surface::Surf Surface::compute(const Grid::Centroids& centroids,
                                const Orbits::Constellation& orbits,
                                const Settings::Sets& settings)
 {
     const double alpha = MathStuff::degreesToRad(settings.coneAngle) / 2.0;
-    double  cos_node = 0.0, sin_node = 0.0, cos_i = 0.0,
+    double  cos_node = 0.0, sin_node = 0.0, cos_i = 0.0, px = 0.0, py = 0.0, pz = 0.0,
             sin_i = 0.0,    c_AnomalyPlusPhase = 0.0, s_AnomalyPlusPhase = 0.0;
-    double  centroid_x = 0.0,  centroid_y = 0.0,  centroid_z = 0.0;
-    double px = 0.0, py = 0.0, pz = 0.0;
 
-    Surface::Surf surface(centroids.size(), 0);
+    Surface::Surf surface(centroids.X.size(), 0);
     double horiz = 0.0, t = 0.0, trueAnomaly = 0.0, semiMajorAxis = 0.0, meanMotion = 0.0;
     for (const Orbits::CircularOrbit& orbit: orbits) {
         semiMajorAxis = orbit.semiMajorAxis();
@@ -42,51 +40,24 @@ Surface::Surf Surface::compute(const std::vector<Grid::Point>& centroids,
             py = cos_i*cos_node*s_AnomalyPlusPhase +       c_AnomalyPlusPhase*sin_node;
             pz = sin_i*s_AnomalyPlusPhase;
             for (size_t i = 0; i < surface.size(); i++)
-                if (surface[i] == 0) {
-                    centroid_x = centroids[i][0];
-                    centroid_y = centroids[i][1];
-                    centroid_z = centroids[i][2];
-                    if ((centroid_x*px + centroid_y*py + centroid_z*pz) > horiz)
-                        surface[i] = 1;
-                }
+                surface[i] |= ((centroids.X[i]*px + centroids.Y[i]*py + centroids.Z[i]*pz) > horiz);
             t = t + settings.deltaT;
         }
     }
     return surface;
 }
 
-//                if (surface[i] == 0) {
-////                    centroid_x = centroids[i][0];
-////                    centroid_y = centroids[i][1];
-////                    centroid_z = centroids[i][2];
-////                    if ((centroid_x*px + centroid_y*py + centroid_z*pz) > horiz)
-////                        surface[i] = 1;
-//                    if ((centroidsX[i]*px + centroidsY[i]*py + centroidsZ[i]*pz) > horiz)
-//                        surface[i] = 1;
-//                }
-
-double Surface::computeTime(const std::vector<Grid::Point>& centroids,
+double Surface::computeTime(const Grid::Centroids& centroids,
                             const Orbits::Constellation& orbits,
                             const Settings::Sets& settings)
 {
     const double alpha = MathStuff::degreesToRad(settings.coneAngle) / 2.0;
     double cos_node = 0.0, sin_node = 0.0, cos_i = 0.0, cos_AnomalyPlusPhase = 0.0, sin_i = 0.0,
-           sin_AnomalyPlusPhase = 0.0;
-    double centroid_x = 0.0,  centroid_y = 0.0, centroid_z = 0.0,
-                   px = 0.0,          py = 0.0,         pz = 0.0;
+           sin_AnomalyPlusPhase = 0.0, px = 0.0,          py = 0.0,         pz = 0.0;
 
-    Surface::Surf    surface(centroids.size(), 0);
-    std::vector<double> time(centroids.size(), 0.0); // Time, Dr. Freeman? Is it really that time again?
+    Surface::Surf    surface(centroids.X.size(), 0);
+    std::vector<double> time(centroids.X.size(), 0.0); // Time, Dr. Freeman? Is it really that time again?
     double max_time = 0.0;
-
-//    std::vector<double> centroidsX(centroids.size()),
-//                        centroidsY(centroids.size()),
-//                        centroidsZ(centroids.size());
-//    for (size_t i = 0; i < centroids.size(); i++) {
-//        centroidsX[i] = centroids[i][0];
-//        centroidsY[i] = centroids[i][1];
-//        centroidsZ[i] = centroids[i][2];
-//    }
 
     double trueAnomaly = 0.0, t = 0.0, horiz = 0.0, semiMajorAxis = 0.0, meanAngularVelocity = 0.0;
     while (t < settings.timeDuration + settings.deltaT/2.0) {
@@ -106,18 +77,8 @@ double Surface::computeTime(const std::vector<Grid::Point>& centroids,
             px =       cos_node*cos_AnomalyPlusPhase - cos_i*sin_AnomalyPlusPhase*sin_node;
             py = cos_i*cos_node*sin_AnomalyPlusPhase +       cos_AnomalyPlusPhase*sin_node;
             pz = sin_i*sin_AnomalyPlusPhase;
-            for (size_t i = 0; i < surface.size(); i++) {
-                if (surface[i] == 0) {
-                    centroid_x = centroids[i][0];
-                    centroid_y = centroids[i][1];
-                    centroid_z = centroids[i][2];
-                    if ((centroid_x*px + centroid_y*py + centroid_z*pz) > horiz)
-                        surface[i] = 1;
-                }
-                //surface[i] |= ((centroidsX[i]*px + centroidsY[i]*py + centroidsZ[i]*pz) > horiz);
-//                surface[i] |= ((centroids[i][0]*px + centroids[i][1]*py
-//                                                   + centroids[i][2]*pz) > horiz);
-            }
+            for (size_t i = 0; i < surface.size(); i++)
+                surface[i] |= ((centroids.X[i]*px + centroids.Y[i]*py + centroids.Z[i]*pz) > horiz);
         }
         for (size_t i = 0; i < surface.size(); i++) {
             if (surface[i]) {
@@ -137,63 +98,55 @@ double Surface::computeTime(const std::vector<Grid::Point>& centroids,
     return max_time;
 }
 
-//Surface::Times Surface::computeTimeFull(const std::vector<Grid::Point>& centroids,
-//                                        const Orbits::Constellation& orbits,
-//                                        const Settings::Sets& settings)
-//{
-//    const double alpha = MathStuff::degreesToRad(settings.coneAngle) / 2.0;
-//    double cos_node = 0.0, sin_node = 0.0, cos_i = 0.0, cos_AnomalyPlusPhase = 0.0, sin_i = 0.0,
-//           sin_AnomalyPlusPhase = 0.0;
-//    double centroid_x = 0.0,  centroid_y = 0.0, centroid_z = 0.0,
-//                   px = 0.0,          py = 0.0,         pz = 0.0;
+Surface::Times Surface::computeTimeFull(const Grid::Centroids& centroids,
+                                        const Orbits::Constellation& orbits,
+                                        const Settings::Sets& settings)
+{
+    const double alpha = MathStuff::degreesToRad(settings.coneAngle) / 2.0;
+    double cos_node = 0.0, sin_node = 0.0, cos_i = 0.0, cos_AnomalyPlusPhase = 0.0, sin_i = 0.0,
+           sin_AnomalyPlusPhase = 0.0, px = 0.0, py = 0.0, pz = 0.0;
 
-//    Surface::Surf surface(centroids.size(), 0);
-//    std::vector<double>     time(centroids.size(), 0.0); // Time, Dr. Freeman? Is it really that time again?
-//    std::vector<double> max_time(centroids.size(), 0.0);
-//    double trueAnomaly = 0.0, t = 0.0, horiz = 0.0, semiMajorAxis = 0.0, meanAngularVelocity = 0.0;
+    Surface::Surf surface(centroids.X.size(), 0);
+    std::vector<double>     time(centroids.X.size(), 0.0); // Time, Dr. Freeman? Is it really that time again?
+    std::vector<double> max_time(centroids.X.size(), 0.0);
+    double trueAnomaly = 0.0, t = 0.0, horiz = 0.0, semiMajorAxis = 0.0, meanAngularVelocity = 0.0;
 
-//    while (t < settings.timeDuration + settings.deltaT/2.0) {
-//        for (const Orbits::CircularOrbit& orbit: orbits) {
-//            semiMajorAxis = orbit.semiMajorAxis();
-//            meanAngularVelocity = sqrt(Earth::mu / (semiMajorAxis*semiMajorAxis*semiMajorAxis));
-//            trueAnomaly = meanAngularVelocity*t;
-//            horiz = horizon(semiMajorAxis / Earth::radius, alpha);
+    while (t < settings.timeDuration + settings.deltaT/2.0) {
+        for (const Orbits::CircularOrbit& orbit: orbits) {
+            semiMajorAxis = orbit.semiMajorAxis();
+            meanAngularVelocity = sqrt(Earth::mu / (semiMajorAxis*semiMajorAxis*semiMajorAxis));
+            trueAnomaly = meanAngularVelocity*t;
+            horiz = horizon(semiMajorAxis / Earth::radius, alpha);
 
-//            cos_i = cos(orbit.inclination);
-//            sin_i = sin(orbit.inclination);
-//            cos_node = cos(orbit.ascendingNode - Earth::angularVelocity*t);
-//            sin_node = sin(orbit.ascendingNode - Earth::angularVelocity*t);
-//            cos_AnomalyPlusPhase = cos(trueAnomaly + orbit.initialPhase);
-//            sin_AnomalyPlusPhase = sin(trueAnomaly + orbit.initialPhase);
+            cos_i = cos(orbit.inclination);
+            sin_i = sin(orbit.inclination);
+            cos_node = cos(orbit.ascendingNode - Earth::angularVelocity*t);
+            sin_node = sin(orbit.ascendingNode - Earth::angularVelocity*t);
+            cos_AnomalyPlusPhase = cos(trueAnomaly + orbit.initialPhase);
+            sin_AnomalyPlusPhase = sin(trueAnomaly + orbit.initialPhase);
 
-//            px =       cos_node*cos_AnomalyPlusPhase - cos_i*sin_AnomalyPlusPhase*sin_node;
-//            py = cos_i*cos_node*sin_AnomalyPlusPhase +       cos_AnomalyPlusPhase*sin_node;
-//            pz = sin_i*sin_AnomalyPlusPhase;
-//            for (size_t i = 0; i < surface.size(); i++)
-//                if (surface[i] == 0) {
-//                    centroid_x = centroids[i][0];
-//                    centroid_y = centroids[i][1];
-//                    centroid_z = centroids[i][2];
-//                    if ((centroid_x*px + centroid_y*py + centroid_z*pz) > horiz)
-//                        surface[i] = 1;
-//                }
-//        }
-//        for (size_t i = 0; i < surface.size(); i++) {
-//            if (surface[i] == 1) {
-//                if (time[i] > max_time[i])
-//                    max_time[i] = time[i];
-//                time[i] = 0.0;
-//            }
-//            else time[i] = time[i] + settings.deltaT;
-//            surface[i] = 0;
-//        }
-//        t = t + settings.deltaT;
-//    }
-//    for (size_t i = 0; i < surface.size(); i++)
-//        if (time[i] > max_time[i])
-//            max_time[i] = time[i];
-//    return max_time;
-//}
+            px =       cos_node*cos_AnomalyPlusPhase - cos_i*sin_AnomalyPlusPhase*sin_node;
+            py = cos_i*cos_node*sin_AnomalyPlusPhase +       cos_AnomalyPlusPhase*sin_node;
+            pz = sin_i*sin_AnomalyPlusPhase;
+            for (size_t i = 0; i < surface.size(); i++)
+                surface[i] |= ((centroids.X[i]*px + centroids.Y[i]*py + centroids.Z[i]*pz) > horiz);
+        }
+        for (size_t i = 0; i < surface.size(); i++) {
+            if (surface[i]) {
+                if (time[i] > max_time[i])
+                    max_time[i] = time[i];
+                time[i] = 0.0;
+            }
+            else time[i] = time[i] + settings.deltaT;
+            surface[i] = 0;
+        }
+        t = t + settings.deltaT;
+    }
+    for (size_t i = 0; i < surface.size(); i++)
+        if (time[i] > max_time[i])
+            max_time[i] = time[i];
+    return max_time;
+}
 
 //SatelliteSurface::Surface SatelliteSurface::compute(const std::vector<Grid::Node>& centroids,
 //                                                    const Orbits::EllipticalConstellation& orbits,
@@ -305,23 +258,24 @@ double Surface::computeTime(const std::vector<Grid::Point>& centroids,
 //    return maxT;
 //}
 
-double Surface::computeArea(const Grid::SphereGrid& sphereGrid, const Orbits::Constellation& orbits,
-                            const Settings::Sets& parameters)
-{
-    auto surface = Surface::compute(sphereGrid.centroids, orbits, parameters);
-    double area = 0.0;
-    for (size_t i = 0; i < surface.size(); i++)
-        if (surface[i] == 1)
-            area = area + sphereGrid.areas[i];
-    return area;
-}
+//double Surface::computeArea(const Grid::SphereGrid& sphereGrid, const Orbits::Constellation& orbits,
+//                            const Settings::Sets& parameters)
+//{
+//    auto surface = Surface::compute(sphereGrid.centroids, orbits, parameters);
+//    double area = 0.0;
+//    for (size_t i = 0; i < surface.size(); i++)
+//        if (surface[i] == 1)
+//            area = area + sphereGrid.areas[i];
+//    return area;
+//}
 
-double Surface::sumArea(const Grid::SphereGrid& sphereGrid, const Surface::Surf& surface)
+//double Surface::sumArea(const Grid::SphereGrid& sphereGrid, const Surface::Surf& surface)
+double Surface::sumArea(const Grid::Areas& areas, const Surface::Surf& surface)
 {
     double area = 0.0;
     for (size_t i = 0; i < surface.size(); i++)
         if (surface[i] == 1)
-            area = area + sphereGrid.areas[i];
+            area = area + areas[i];
     return area;
 }
 
