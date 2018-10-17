@@ -79,7 +79,7 @@ std::pair<Opt::Point, double> ParticleSwarmMethod::optimize(const Opt::TargetFun
                                                             const bool debugMode, const bool writeSwarm)
 {
     std::vector<ParticleSwarmMethod::Swarm> iterations;
-    ParticleSwarmMethod::Swarm swarm(parameters.S), swarmVelocities(parameters.S);
+    ParticleSwarmMethod::Swarm swarm(parameters.swarmSize), swarmVelocities(parameters.swarmSize);
     for (size_t i = 0; i < swarm.size(); i++) {
         swarm[i].resize(reg.size());
         swarmVelocities[i].resize(reg.size());

@@ -5,6 +5,7 @@
 
 #include <cstdio>
 #include <cmath>
+#include <iostream>
 #include <fstream>
 
 //bool isCorrectCircularOrbit(const Orbits::CircularOrbit& orbit)
@@ -38,7 +39,8 @@ Orbits::Constellation Orbits::readCircularOrbits(const std::string& filepath)
 
 void Orbits::printCircularOrbits(const Orbits::Constellation& orbits)
 {
-    printf(Messages::circularOrbitHeader.c_str());
+    // нехорошо, конечно, смешивать std::cout << и printf
+    std::cout << Messages::circularOrbitHeader;
     for (const Orbits::CircularOrbit& orbit: orbits)
         printf(Messages::circularOrbitMessage.c_str(),
                MathStuff::radToDegrees(orbit.ascendingNode),

@@ -4,7 +4,8 @@
 #include "swarm.h"
 #include "grid.h"
 
-#include <QTime>
+//#include <QTime>
+#include <chrono>
 #include <iostream>
 #include <random>
 
@@ -13,9 +14,7 @@ void Examples::exampleSurfaceComputationCircular()
     QTime timer;
 
     // Чтение сетки
-    //bool ok = false;
-    //Grid::SphereGrid sphereGrid = Grid::readGrid({"gridCentr-small.txt", "gridAreas-small.txt"}, &ok);
-    Grid::Centroids centroids = Grid::readCentroids("gridCentr-small.txt");
+    Grid::Centroids centroids = Grid::readCentroids("gridCentroidsNew.txt");
 
     // Чтение и печать орбит
     Orbits::Constellation orbits = Orbits::readCircularOrbits("circularOrbits.txt");
@@ -24,17 +23,14 @@ void Examples::exampleSurfaceComputationCircular()
     Settings::Sets settings = Settings::readSettings("settings.ini");
     Settings::printSettings(settings);
 
-    timer.start();
-
-    // Вычисление области покрытия и сохранение результата в файл для визуализации в Mathematica.
-    //Surface::Surf surface = Surface::compute(sphereGrid.centroids, orbits, settings);
+    // Вычисление области покрытия.
     //Surface::Surf surface = Surface::compute(centroids, orbits, settings);
-    // Время ожидания:
-    //double maxTime = Surface::computeTime(sphereGrid.centroids, orbits, settings);
-    double maxTime = Surface::computeTime(centroids, orbits, settings);
-    auto elapsed = timer.elapsed();
 
-    std::cout << "\nTime: " << elapsed << "ms.\n";
+    auto start = std::chrono::system_clock::now();
+    double maxTime = Surface::computeTime(centroids, orbits, settings);
+    auto end = std::chrono::system_clock::now();
+
+    std::cout << "\nTiming: " << (end - start).count() << "ms.\n";
     //out << "Result: " << Surface::sumArea(sphereGrid, surface) << ")\n";
     std::cout << "Max time: " << maxTime << "\n";
     //Surface::writeToTextFile(surface, "computedSurface.txt");
@@ -161,14 +157,11 @@ double ftime(const Opt::Point& orbitsVector)
         {p.coneAngle, p.timeDuration, reducedTimeStep});
     const double area = Surface::sumArea(areas, surf) / fullArea;
 
-//    const double area = Surface::computeArea(sphereGrid, orbits,
-//        {p.coneAngle, p.timeDuration, reducedTimeStep}) / fullArea;
-
     double TStar = 0.0;
     if (area < 0.99) { TStar = p.timeDuration + (1.0 - area)*10000.0; }
     else             { TStar = Surface::computeTime(centroids, orbits, p); }
 
-    return TStar; //+ penalty*1.0E8;
+    return TStar;
 }
 
 //double ftimeF(const Opt::Point& orbitsVector)
@@ -193,42 +186,6 @@ double ftime(const Opt::Point& orbitsVector)
 //    orbits[9].ascendingNode = orbitsVector[3];
 
 //    return Surface::computeTime(sphereGrid.centroids, orbits, p);
-//}
-
-//void out_histogram(const Orbits::Constellation& orbits)
-//{
-//    // Чтение сетки
-//    bool ok = false;
-//    Grid::SphereGrid sphereGrid = Grid::readGrid({"bigGridCentroids.txt", "bigGridAreas.txt"}, &ok);
-//    if (!ok)
-//        return;
-
-//    // Чтение и печать орбит
-////    Orbits::Constellation orbits = Orbits::readCircularOrbits("circularOrbits.txt");
-//    Orbits::printCircularOrbits(orbits);
-
-//    // Вычисление области покрытия и сохранение результата в файл для визуализации в Mathematica.
-//    Settings::Sets settings = Settings::readSettings("settings.ini");
-//    settings.deltaT = 15.0;
-//    settings.timeDuration = 7200.0;
-//    //SatelliteSurface::Surface surface = SatelliteSurface::compute(sphereGrid.centroids, orbits, parameters);
-
-//    QFile histoFile("hist_time.txt");
-//    histoFile.open(QIODevice::WriteOnly | QIODevice::Text);
-//    QTextStream outHist(&histoFile);
-
-//    auto time_data = Surface::computeTimeFull(sphereGrid.centroids, orbits, settings);
-
-//    outHist << "{";
-//    for (size_t i = 0; i < time_data.size(); i++) {
-//        outHist << "{" << sphereGrid.centroids[i][0] << "," << sphereGrid.centroids[i][1] << ","
-//                << sphereGrid.centroids[i][2] << ","
-//                << time_data[i] << /*( (i < time_data.size()-1) ? "," : "" ) <<*/ "}";
-//        outHist << ((i < time_data.size() - 1) ? "," : "");
-//    }
-//        //outHist << time_data[i] << ( (i < time_data.size()-1) ? "," : "" );
-//    outHist << "}";
-//    histoFile.close();
 //}
 
 void Examples::SwarmOptimisation()
@@ -256,30 +213,13 @@ void Examples::SwarmOptimisation()
     region.push_back({0.0, MathStuff::degreesToRad(100.0)});
 
     ParticleSwarmMethod::Parameters p;
-    p.S = 1000;
+    p.swarmSize = 500;
     p.omega = -0.32;
     p.phi = 2.0;
     p.maxIterations = 20;
     auto sol = ParticleSwarmMethod::optimize(ftime, region, Opt::SearchType::SearchMinimum, p, true, false);
 
-    std::cout << "Answer: " << sol.second << "\n";
-
-//    QTextStream out(stdout);
-//    out << "Answer: " << ftimeF(sol.first) << "\n";
-
-//    Orbits::Constellation orbits = Orbits::readCircularOrbits("circularOrbits.txt");
-//    orbits[2].ascendingNode = orbitsVector[0];
-//    orbits[3].ascendingNode = orbitsVector[0];
-
-//    orbits[4].ascendingNode = orbitsVector[1];
-//    orbits[5].ascendingNode = orbitsVector[1];
-
-//    orbits[6].ascendingNode = orbitsVector[2];
-//    orbits[7].ascendingNode = orbitsVector[2];
-
-//    orbits[8].ascendingNode = orbitsVector[3];
-//    orbits[9].ascendingNode = orbitsVector[3];
-//    out_histogram(orbits);
+    std::cout << "Optimization result: " << sol.second << "\n";
 }
 
 void Examples::exampleGridGeneration(const int iterations)

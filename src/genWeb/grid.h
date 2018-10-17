@@ -4,7 +4,6 @@
 #include <array>
 #include <vector>
 #include <utility>
-#include <QString>
 
 namespace Grid {
     using Point = std::array<double, 3>;
@@ -36,18 +35,10 @@ namespace Grid {
     std::vector<Point> centroids(const Grid::TriangularGrid& grid);
     Areas areas(const Grid::TriangularGrid& grid);
 
-    // void writeSphereGrid(const SphereGrid& sphereGrid, const std::pair<QString, QString>& files);
     void writeNodes(const std::vector<Point>& nodes, const std::string& file);
     void writeCells(const std::vector<Cell>& cells, const std::string& file);
     void writeCentroids(const std::vector<Point>& centroids, const std::string& file);
     void writeAreas(const std::vector<double>& areas, const std::string& file);
-
-    // void writeTriangularGrid(const Grid::TriangularGrid& triangGrid,
-    //                          const std::pair<QString, QString>& files);
-
-    //SphereGrid readGrid(const std::pair<QString, QString>& files, bool *ok);
-    //Centroids  readCentroids(const QString& file, bool *ok);
-    //Areas      readAreas(const QString& file, bool *ok);
 
     Nodes readNodes(const std::string& file);
     Cells readCells(const std::string& file);

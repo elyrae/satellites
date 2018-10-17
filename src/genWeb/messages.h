@@ -13,9 +13,9 @@ namespace Messages {
     const std::string circularOrbitMessage = "[%10.2f deg|%7.2f deg|%9.2f deg|%8.2f km]\n";
     const std::string ellipticalOrbitMessage = "[%f deg|%f deg|%f deg|%f km|%f km|%f deg]\n";
     const std::string settingsMessage = "Algorithm parameters:\n"
-                                        "    Satellite cone angle: %f degrees.\n"
-                                        "    Duration: %f seconds.\n"
-                                        "    Time step: %f seconds.\n";
+                                        "    Satellite cone angle: %.2f degrees.\n"
+                                        "    Duration: %.2f seconds.\n"
+                                        "    Time step: %.2f seconds.\n";
 }
 
 #endif // MESSAGES_H

@@ -10,17 +10,14 @@ namespace ParticleSwarmMethod {
 
     // Параметры метода роя частиц
     struct Parameters {
-        int S;        // количество частиц в рое
-        double omega; //
-        double phi;   //
+        int swarmSize;
+        double omega;
+        double phi;
 
-        int maxIterations; //
+        int maxIterations;
     };
 
-    const Parameters defaults = { .S = 250,
-                                  .omega = -0.32,
-                                  .phi = 1.5,
-                                  .maxIterations = 10};
+    const Parameters defaults = { .swarmSize = 250, .omega = -0.32, .phi = 2.0, .maxIterations = 10};
 
     std::pair<Opt::Point, double> optimize(const Opt::TargetFunction targetF, const Region& bound,
                                            const Opt::SearchType searchType,
