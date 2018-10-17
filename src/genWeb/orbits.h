@@ -1,7 +1,9 @@
 #ifndef ORBITS_H
 #define ORBITS_H
 
-#include <QString>
+#include <string>
+#include <vector>
+//#include <QString>
 
 // Конечно же, круговая орбита является частным случаем эллиптической, но
 // такое разделение удобно, так как алгоритмы счета немного разные
@@ -15,7 +17,7 @@ namespace Orbits {
 
         double height; // высота орбиты над уровнем моря, м
 
-        double semiMajorAxis() const; // большая полуось - суть радиус Земли + высота орбиты
+        double semiMajorAxis() const; // большая полуось = радиус Земли + высота орбиты
         double period()        const; // период, c
         double meanMotion()    const; // средняя угловая скорость, рад/с
     };
@@ -43,11 +45,12 @@ namespace Orbits {
     double solveKeplersEquation(const double t, const EllipticalOrbit& orbit, const double eps = 1.0E-4);
     double trueAnomaly(const double E, const double e);
 
-    Constellation readCircularOrbits(const QString& filepath);
+    // Constellation readCircularOrbits(const QString& filepath);
+    Constellation readCircularOrbits(const std::string& filepath);
     void printCircularOrbits(const Constellation& orbits);
 
-    EllipticalConstellation readEllipticalOrbits(const QString& filepath);
-    void printEllipticalOrbits(const EllipticalConstellation& orbits);
+    // EllipticalConstellation readEllipticalOrbits(const QString& filepath);
+    // void printEllipticalOrbits(const EllipticalConstellation& orbits);
 }
 
 #endif // ORBITS_H

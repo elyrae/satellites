@@ -2,6 +2,7 @@
 
 #include <QFile>
 #include <QTextStream>
+#include <fstream>
 
 const std::vector<Grid::Cell> initialCells =
 {{1, 11, 7},
@@ -64,11 +65,11 @@ Grid::TriangularGrid Grid::generate(const int iterations)
     Grid::TriangularGrid grid;
     grid.nodes = initialNodes;
     grid.cells = initialCells;
-    grid.nodes.reserve(Grid::reserveLimit);
-    grid.cells.reserve(Grid::reserveLimit);
+//    grid.nodes.reserve(Grid::reserveLimit);
+//    grid.cells.reserve(Grid::reserveLimit);
 
     std::vector<Grid::Cell> newCells;
-    newCells.reserve(Grid::reserveLimit);
+    //newCells.reserve(Grid::reserveLimit);
 
     int k = 0;
     for (int it = 1; it <= iterations; it++)
@@ -106,47 +107,47 @@ std::vector<Grid::Point> Grid::centroids(const Grid::TriangularGrid &grid)
 }
 
 // Запись центральных точек и площадей в текстовые файлы.
-void Grid::writeSphereGrid(const Grid::SphereGrid& sphereGrid,
-                           const std::pair<QString, QString>& files)
-{
-    QFile centroidsFile(files.first);
-    QFile areasFile(files.second);
-    if (!centroidsFile.open(QIODevice::WriteOnly | QIODevice::Text))
-        return;
-    if (!areasFile.open(QIODevice::WriteOnly | QIODevice::Text))
-        return;
+//void Grid::writeSphereGrid(const Grid::SphereGrid& sphereGrid,
+//                           const std::pair<QString, QString>& files)
+//{
+//    QFile centroidsFile(files.first);
+//    QFile areasFile(files.second);
+//    if (!centroidsFile.open(QIODevice::WriteOnly | QIODevice::Text))
+//        return;
+//    if (!areasFile.open(QIODevice::WriteOnly | QIODevice::Text))
+//        return;
 
-    QTextStream outCentroids(&centroidsFile);
-    QTextStream outAreas(&areasFile);
-    for (const Grid::Point& centroid: sphereGrid.centroids)
-        outCentroids << QString("%1 %2 %3\n").arg(centroid[0], -12, 'g', 8)
-                                             .arg(centroid[1], -12, 'g', 8)
-                                             .arg(centroid[2], -12, 'g', 8);
-    for (const double area: sphereGrid.areas)
-        outAreas << QString("%1\n").arg(area, -12, 'g', 8);
-}
+//    QTextStream outCentroids(&centroidsFile);
+//    QTextStream outAreas(&areasFile);
+//    for (const Grid::Point& centroid: sphereGrid.centroids)
+//        outCentroids << QString("%1 %2 %3\n").arg(centroid[0], -12, 'g', 8)
+//                                             .arg(centroid[1], -12, 'g', 8)
+//                                             .arg(centroid[2], -12, 'g', 8);
+//    for (const double area: sphereGrid.areas)
+//        outAreas << QString("%1\n").arg(area, -12, 'g', 8);
+//}
 
-void Grid::writeTriangularGrid(const Grid::TriangularGrid& triangGrid,
-                               const std::pair<QString, QString>& files)
-{
-    QFile nodesFile(files.first);
-    QFile cellsFile(files.second);
-    if (!nodesFile.open(QIODevice::WriteOnly | QIODevice::Text))
-        return;
-    if (!cellsFile.open(QIODevice::WriteOnly | QIODevice::Text))
-        return;
+//void Grid::writeTriangularGrid(const Grid::TriangularGrid& triangGrid,
+//                               const std::pair<QString, QString>& files)
+//{
+//    QFile nodesFile(files.first);
+//    QFile cellsFile(files.second);
+//    if (!nodesFile.open(QIODevice::WriteOnly | QIODevice::Text))
+//        return;
+//    if (!cellsFile.open(QIODevice::WriteOnly | QIODevice::Text))
+//        return;
 
-    QTextStream outNodes(&nodesFile);
-    QTextStream outCells(&cellsFile);
-    for (const Grid::Point& node: triangGrid.nodes)
-        outNodes << QString("%1 %2 %3\n").arg(node[0], -12, 'g', 8)
-                                         .arg(node[1], -12, 'g', 8)
-                                         .arg(node[2], -12, 'g', 8);
-    for (const Grid::Cell& cell: triangGrid.cells)
-        outCells << QString("%1 %2 %3\n").arg(cell[0], -12)
-                                         .arg(cell[1], -12)
-                                         .arg(cell[2], -12);
-}
+//    QTextStream outNodes(&nodesFile);
+//    QTextStream outCells(&cellsFile);
+//    for (const Grid::Point& node: triangGrid.nodes)
+//        outNodes << QString("%1 %2 %3\n").arg(node[0], -12, 'g', 8)
+//                                         .arg(node[1], -12, 'g', 8)
+//                                         .arg(node[2], -12, 'g', 8);
+//    for (const Grid::Cell& cell: triangGrid.cells)
+//        outCells << QString("%1 %2 %3\n").arg(cell[0], -12)
+//                                         .arg(cell[1], -12)
+//                                         .arg(cell[2], -12);
+//}
 
 // Вычисление площадей всех треугольных граней сетки.
 std::vector<double> Grid::areas(const Grid::TriangularGrid &grid)
@@ -172,58 +173,58 @@ std::vector<double> Grid::areas(const Grid::TriangularGrid &grid)
     return areas;
 }
 
-Grid::SphereGrid Grid::readGrid(const std::pair<QString, QString> &files, bool *ok)
-{
-    QFile centroidsFile(files.first);
-    QFile areasFile(files.second);
-    Grid::SphereGrid sphereGrid;
+//Grid::SphereGrid Grid::readGrid(const std::pair<QString, QString> &files, bool *ok)
+//{
+//    QFile centroidsFile(files.first);
+//    QFile areasFile(files.second);
+//    Grid::SphereGrid sphereGrid;
 
-    *ok = true;
-    if (!centroidsFile.open(QIODevice::ReadOnly | QIODevice::Text)) *ok = false;
-    if (!areasFile.open(QIODevice::ReadOnly | QIODevice::Text))     *ok = false;
-    if (!*ok)
-        return sphereGrid;
-
-    QTextStream inCentroids(&centroidsFile);
-    QTextStream inAreas(&areasFile);
-    Grid::Point node;
-    double area;
-    sphereGrid.centroids.reserve(Grid::reserveLimit);
-    sphereGrid.areas.reserve(Grid::reserveLimit);
-    while (!inCentroids.atEnd()) {
-        inCentroids >> node[0];
-        inCentroids >> node[1];
-        inCentroids >> node[2];
-        inAreas >> area;
-
-        if (inCentroids.status() == QTextStream::Status::Ok) {
-            sphereGrid.centroids.push_back(node);
-            sphereGrid.areas.push_back(area);
-        }
-        else return sphereGrid;
-    }
-    return sphereGrid;
-}
-
-Grid::Areas Grid::readAreas(const QString &file, bool *ok)
-{
-    QFile areasFile(file);
-    Grid::Areas areas;
-
-    areasFile.open(QIODevice::ReadOnly | QIODevice::Text);
 //    *ok = true;
+//    if (!centroidsFile.open(QIODevice::ReadOnly | QIODevice::Text)) *ok = false;
 //    if (!areasFile.open(QIODevice::ReadOnly | QIODevice::Text))     *ok = false;
 //    if (!*ok)
-//        return areas;
+//        return sphereGrid;
 
-    QTextStream inAreas(&areasFile);
-    double area = 0.0;
-    while (!inAreas.atEnd()) {
-        inAreas >> area;
-        areas.push_back(area);
-    }
-    return areas;
-}
+//    QTextStream inCentroids(&centroidsFile);
+//    QTextStream inAreas(&areasFile);
+//    Grid::Point node;
+//    double area;
+////    sphereGrid.centroids.reserve(Grid::reserveLimit);
+////    sphereGrid.areas.reserve(Grid::reserveLimit);
+//    while (!inCentroids.atEnd()) {
+//        inCentroids >> node[0];
+//        inCentroids >> node[1];
+//        inCentroids >> node[2];
+//        inAreas >> area;
+
+//        if (inCentroids.status() == QTextStream::Status::Ok) {
+//            sphereGrid.centroids.push_back(node);
+//            sphereGrid.areas.push_back(area);
+//        }
+//        else return sphereGrid;
+//    }
+//    return sphereGrid;
+//}
+
+//Grid::Areas Grid::readAreas(const QString &file, bool *ok)
+//{
+//    QFile areasFile(file);
+//    Grid::Areas areas;
+
+//    areasFile.open(QIODevice::ReadOnly | QIODevice::Text);
+////    *ok = true;
+////    if (!areasFile.open(QIODevice::ReadOnly | QIODevice::Text))     *ok = false;
+////    if (!*ok)
+////        return areas;
+
+//    QTextStream inAreas(&areasFile);
+//    double area = 0.0;
+//    while (!inAreas.atEnd()) {
+//        inAreas >> area;
+//        areas.push_back(area);
+//    }
+//    return areas;
+//}
 
 //void Grid::writeGrid(const Grid::TriangularGrid &grid, const std::pair<std::string &file)
 //{
@@ -244,31 +245,122 @@ Grid::Areas Grid::readAreas(const QString &file, bool *ok)
 //        outAreas << QString("%1\n").arg(area, -12, 'g', 8);
 //}
 
-Grid::Centroids Grid::readCentroids(const QString &file, bool *ok)
+//Grid::Centroids Grid::readCentroids(const QString &file, bool *ok)
+//{
+//    QFile centroidsFile(file);
+//    Grid::Centroids centroids;
+
+//    *ok = centroidsFile.open(QIODevice::ReadOnly | QIODevice::Text);
+//    if (!*ok)
+//        return centroids;
+
+//    QTextStream inCentroids(&centroidsFile);
+//    double x = 0.0, y = 0.0, z = 0.0;
+//    //centroids.X.reserve(Grid::reserveLimit);
+//    //centroids.Y.reserve(Grid::reserveLimit);
+//    //centroids.Z.reserve(Grid::reserveLimit);
+//    while (!inCentroids.atEnd()) {
+//        inCentroids >> x;
+//        inCentroids >> y;
+//        inCentroids >> z;
+
+//        if (inCentroids.status() == QTextStream::Status::Ok) {
+//            centroids.X.push_back(x);
+//            centroids.Y.push_back(y);
+//            centroids.Z.push_back(z);
+//        }
+//        else return centroids;
+//    }
+//    return centroids;
+//}
+
+void Grid::writeCentroids(const std::vector<Grid::Point> &centroids, const std::string &file)
 {
-    QFile centroidsFile(file);
+    std::ofstream out(file);
+    for (const Grid::Point& centroid: centroids)
+        out << centroid[0] << " " << centroid[1] << " " << centroid[2] << "\n";
+}
+
+void Grid::writeAreas(const std::vector<double> &areas, const std::string &file)
+{
+    std::ofstream out(file);
+    for (const double area: areas)
+        out << area << "\n";
+}
+
+void Grid::writeNodes(const std::vector<Point>& nodes, const std::string &file)
+{
+    std::ofstream out(file);
+    for (const Grid::Point& node: nodes)
+        out << node[0] << " " << node[1] << " " << node[2] << "\n";
+}
+
+void Grid::writeCells(const std::vector<Cell>& cells, const std::string &file)
+{
+    std::ofstream out(file);
+    for (const Grid::Cell& cell: cells)
+        out << cell[0] << " " << cell[1] << " " << cell[2] << "\n";
+}
+
+Grid::Nodes Grid::readNodes(const std::string &file)
+{
+    std::ifstream in(file);
+    Grid::Nodes nodes;
+
+    double x = 0.0, y = 0.0, z = 0.0;
+    while (in.good()) {
+        in >> x;
+        in >> y;
+        in >> z;
+            
+        nodes.push_back({x, y, z});
+    }
+    return nodes;
+}
+
+Grid::Cells Grid::readCells(const std::string &file)
+{
+    std::ifstream in(file);
+    Grid::Cells cells;
+
+    int m = 0, n = 0, k = 0;
+    while (in.good()) {
+        in >> m;
+        in >> n;
+        in >> k;
+            
+        cells.push_back({m, n, k});
+    }
+    return cells;
+}
+
+Grid::Centroids Grid::readCentroids(const std::string &file)
+{
+    std::ifstream in(file);
     Grid::Centroids centroids;
 
-    *ok = centroidsFile.open(QIODevice::ReadOnly | QIODevice::Text);
-    if (!*ok)
-        return centroids;
-
-    QTextStream inCentroids(&centroidsFile);
     double x = 0.0, y = 0.0, z = 0.0;
-    //centroids.X.reserve(Grid::reserveLimit);
-    //centroids.Y.reserve(Grid::reserveLimit);
-    //centroids.Z.reserve(Grid::reserveLimit);
-    while (!inCentroids.atEnd()) {
-        inCentroids >> x;
-        inCentroids >> y;
-        inCentroids >> z;
-
-        if (inCentroids.status() == QTextStream::Status::Ok) {
-            centroids.X.push_back(x);
-            centroids.Y.push_back(y);
-            centroids.Z.push_back(z);
-        }
-        else return centroids;
+    while (in.good()) {
+        in >> x;
+        in >> y;
+        in >> z;
+            
+        centroids.X.push_back(x);
+        centroids.Y.push_back(y);
+        centroids.Z.push_back(z);
     }
     return centroids;
+}
+
+Grid::Areas Grid::readAreas(const std::string &file)
+{
+    std::ifstream in(file);
+    Grid::Areas areas;
+
+    double area = 0.0;
+    while (in.good()) {
+        in >> area;
+        areas.push_back(area);
+    }
+    return areas;
 }

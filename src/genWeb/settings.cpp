@@ -1,29 +1,44 @@
 #include "settings.h"
 #include "messages.h"
 
-#include <QString>
-#include <QSettings>
-#include <QTextStream>
+//#include <QString>
+//#include <QSettings>
+//#include <QTextStream>
+#include <cstdio>
+#include <iostream>
+#include "INIReader.h"
 
-Settings::Sets Settings::readSettings(const QString &iniFile)
+//Settings::Sets Settings::readSettings(const QString &iniFile)
+//{
+//    QSettings settings(iniFile, QSettings::IniFormat);
+//    Settings::Sets parameters;
+//    const Settings::Sets defaults = Settings::defaultParameters;
+
+//    parameters.coneAngle    = settings.value("Satellites/ConeAngle", defaults.coneAngle).toDouble();
+//    parameters.deltaT       = settings.value("Orbits/DeltaT", 60.0).toDouble();
+//    parameters.timeDuration = settings.value("Orbits/TimeDuration", 60.0).toDouble() * 60.0;
+
+//    return Settings::isCorrectSets(parameters) ? parameters : defaults;
+//}
+
+Settings::Sets Settings::readSettings(const std::string& iniFile)
 {
-    QSettings settings(iniFile, QSettings::IniFormat);
     Settings::Sets parameters;
-    const Settings::Sets defaults = Settings::defaultParameters;
+    INIReader reader(iniFile);
+    if (reader.ParseError() < 0) {
+        std::cout << "Can't load '" << iniFile << "'\n";
+        return Settings::defaultParameters;
+    }
 
-    parameters.coneAngle    = settings.value("Satellites/ConeAngle", defaults.coneAngle).toDouble();
-    parameters.deltaT       = settings.value("Orbits/DeltaT", 60.0).toDouble();
-    parameters.timeDuration = settings.value("Orbits/TimeDuration", 60.0).toDouble() * 60.0;
-
-    return Settings::isCorrectSets(parameters) ? parameters : defaults;
+    parameters.coneAngle    = reader.GetReal("Satellites", "ConeAngle", 120.0);
+    parameters.deltaT       = reader.GetReal("Orbits", "DeltaT", 60.0);
+    parameters.timeDuration = reader.GetReal("Orbits", "TimeDuration", 60.0) * 60.0;
+    return Settings::isCorrectSets(parameters) ? parameters : Settings::defaultParameters;
 }
 
-void Settings::printAlgorithmSettings(const Settings::Sets& params)
+void Settings::printSettings(const Settings::Sets& params)
 {
-    QTextStream out(stdout);
-    out << Messages::settingsMessage.arg(params.coneAngle)
-                                    .arg(params.timeDuration)
-                                    .arg(params.deltaT);
+    printf(Messages::settingsMessage.c_str(), params.coneAngle, params.timeDuration, params.deltaT);
 }
 
 bool Settings::isCorrectSets(const Settings::Sets &params)

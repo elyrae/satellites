@@ -16,9 +16,9 @@ void Examples::example_surface_computation_circular()
     QTime timer;
 
     // Чтение сетки
-    bool ok = false;
+    //bool ok = false;
     //Grid::SphereGrid sphereGrid = Grid::readGrid({"gridCentr-small.txt", "gridAreas-small.txt"}, &ok);
-    Grid::Centroids centroids = Grid::readCentroids("gridCentr-small.txt", &ok);
+    Grid::Centroids centroids = Grid::readCentroids("gridCentr-small.txt");
 
     // Чтение и печать орбит
     Orbits::Constellation orbits = Orbits::readCircularOrbits("circularOrbits.txt");
@@ -96,11 +96,11 @@ double ftime(const Opt::Point& orbitsVector)
     const double fullArea = 12.5513;
     const double reducedTimeStep = 240.0;
 
-    static bool ok = false;
+    //static bool ok = false;
     //static const Grid::SphereGrid sphereGrid = Grid::readGrid({"gridCentr-small.txt",
     //                                                           "gridAreas-small.txt"}, &ok);
-    static const Grid::Centroids centroids = Grid::readCentroids("gridCentr-small.txt", &ok);
-    static const Grid::Areas areas = Grid::readAreas("gridAreas-small.txt", &ok);
+    static const Grid::Centroids centroids = Grid::readCentroids("gridCentr-small.txt");
+    static const Grid::Areas areas = Grid::readAreas("gridAreas-small.txt");
 
     static Orbits::Constellation orbits = Orbits::readCircularOrbits("circularOrbits.txt");
     static const Settings::Sets p = Settings::readSettings("settings.ini");
@@ -112,26 +112,26 @@ double ftime(const Opt::Point& orbitsVector)
     // orbits[4].ascendingNode = orbitsVector[0];
     // orbits[5].ascendingNode = orbitsVector[0];
 
+    orbits[5].ascendingNode = orbitsVector[0];
     orbits[6].ascendingNode = orbitsVector[0];
     orbits[7].ascendingNode = orbitsVector[0];
     orbits[8].ascendingNode = orbitsVector[0];
     orbits[9].ascendingNode = orbitsVector[0];
-    orbits[10].ascendingNode = orbitsVector[0];
-    orbits[11].ascendingNode = orbitsVector[0];
+    // orbits[11].ascendingNode = orbitsVector[0];
 
+    orbits[10].ascendingNode = orbitsVector[1];
+    orbits[11].ascendingNode = orbitsVector[1];
     orbits[12].ascendingNode = orbitsVector[1];
     orbits[13].ascendingNode = orbitsVector[1];
     orbits[14].ascendingNode = orbitsVector[1];
-    orbits[15].ascendingNode = orbitsVector[1];
-    orbits[16].ascendingNode = orbitsVector[1];
-    orbits[17].ascendingNode = orbitsVector[1];
+    // orbits[17].ascendingNode = orbitsVector[1];
 
+    orbits[15].ascendingNode = orbitsVector[2];
+    orbits[16].ascendingNode = orbitsVector[2];
+    orbits[17].ascendingNode = orbitsVector[2];
     orbits[18].ascendingNode = orbitsVector[2];
     orbits[19].ascendingNode = orbitsVector[2];
-    orbits[20].ascendingNode = orbitsVector[2];
-    orbits[21].ascendingNode = orbitsVector[2];
-    orbits[22].ascendingNode = orbitsVector[2];
-    orbits[23].ascendingNode = orbitsVector[2];
+    // orbits[23].ascendingNode = orbitsVector[2];
     // ============================================
 
     orbits[0].initialPhase = orbitsVector[3] + 0.0*orbitsVector[7];
@@ -139,28 +139,28 @@ double ftime(const Opt::Point& orbitsVector)
     orbits[2].initialPhase = orbitsVector[3] + 2.0*orbitsVector[7];
     orbits[3].initialPhase = orbitsVector[3] + 3.0*orbitsVector[7];
     orbits[4].initialPhase = orbitsVector[3] + 4.0*orbitsVector[7];
-    orbits[5].initialPhase = orbitsVector[3] + 5.0*orbitsVector[7];
+    // orbits[5].initialPhase = orbitsVector[3] + 5.0*orbitsVector[7];
 
-    orbits[6].initialPhase = orbitsVector[4] +  0.0*orbitsVector[8];
-    orbits[7].initialPhase = orbitsVector[4] +  1.0*orbitsVector[8];
-    orbits[8].initialPhase = orbitsVector[4] +  2.0*orbitsVector[8];
-    orbits[9].initialPhase = orbitsVector[4] +  3.0*orbitsVector[8];
-    orbits[10].initialPhase = orbitsVector[4] + 4.0*orbitsVector[8];
-    orbits[11].initialPhase = orbitsVector[4] + 5.0*orbitsVector[8];
+    orbits[5].initialPhase = orbitsVector[4] + 0.0*orbitsVector[8];
+    orbits[6].initialPhase = orbitsVector[4] + 1.0*orbitsVector[8];
+    orbits[7].initialPhase = orbitsVector[4] + 2.0*orbitsVector[8];
+    orbits[8].initialPhase = orbitsVector[4] + 3.0*orbitsVector[8];
+    orbits[9].initialPhase = orbitsVector[4] + 4.0*orbitsVector[8];
+    // orbits[11].initialPhase = orbitsVector[4] + 5.0*orbitsVector[8];
 
-    orbits[12].initialPhase = orbitsVector[5] + 0.0*orbitsVector[9];
-    orbits[13].initialPhase = orbitsVector[5] + 1.0*orbitsVector[9];
-    orbits[14].initialPhase = orbitsVector[5] + 2.0*orbitsVector[9];
-    orbits[15].initialPhase = orbitsVector[5] + 3.0*orbitsVector[9];
-    orbits[16].initialPhase = orbitsVector[5] + 4.0*orbitsVector[9];
-    orbits[17].initialPhase = orbitsVector[5] + 5.0*orbitsVector[9];
+    orbits[10].initialPhase = orbitsVector[5] + 0.0*orbitsVector[9];
+    orbits[11].initialPhase = orbitsVector[5] + 1.0*orbitsVector[9];
+    orbits[12].initialPhase = orbitsVector[5] + 2.0*orbitsVector[9];
+    orbits[13].initialPhase = orbitsVector[5] + 3.0*orbitsVector[9];
+    orbits[14].initialPhase = orbitsVector[5] + 4.0*orbitsVector[9];
+    // orbits[17].initialPhase = orbitsVector[5] + 5.0*orbitsVector[9];
 
-    orbits[18].initialPhase = orbitsVector[6] + 0.0*orbitsVector[10];
-    orbits[19].initialPhase = orbitsVector[6] + 1.0*orbitsVector[10];
-    orbits[20].initialPhase = orbitsVector[6] + 2.0*orbitsVector[10];
-    orbits[21].initialPhase = orbitsVector[6] + 3.0*orbitsVector[10];
-    orbits[22].initialPhase = orbitsVector[6] + 4.0*orbitsVector[10];
-    orbits[23].initialPhase = orbitsVector[6] + 5.0*orbitsVector[10];
+    orbits[15].initialPhase = orbitsVector[6] + 0.0*orbitsVector[10];
+    orbits[16].initialPhase = orbitsVector[6] + 1.0*orbitsVector[10];
+    orbits[17].initialPhase = orbitsVector[6] + 2.0*orbitsVector[10];
+    orbits[18].initialPhase = orbitsVector[6] + 3.0*orbitsVector[10];
+    orbits[19].initialPhase = orbitsVector[6] + 4.0*orbitsVector[10];
+    // orbits[23].initialPhase = orbitsVector[6] + 5.0*orbitsVector[10];
 
     double penalty = 0.0;
     const int params_out_region = 11;
@@ -274,10 +274,10 @@ void Examples::swarm_optimisation()
     region.push_back({0.0, MathStuff::degreesToRad(100.0)});
 
     ParticleSwarmMethod::Parameters p;
-    p.S = 250;
+    p.S = 1000;
     p.omega = -0.32;
     p.phi = 2.0;
-    p.maxIterations = 15;
+    p.maxIterations = 20;
     auto sol = ParticleSwarmMethod::optimize(ftime, region, Opt::SearchType::SearchMinimum, p, true, false);
     //auto orbitsVector = sol.first;
 
@@ -323,6 +323,6 @@ void Examples::example_grid_generation()
     sphereGrid.areas = areas;
     sphereGrid.centroids = centroids;
 
-    Grid::writeTriangularGrid(grid, {"gridNodes-small.txt", "gridCells-small.txt"});
-    Grid::writeSphereGrid(sphereGrid, {"gridCentr-small.txt", "gridAreas-small.txt"});
+    // Grid::writeTriangularGrid(grid, {"gridNodes-small.txt", "gridCells-small.txt"});
+    // Grid::writeSphereGrid(sphereGrid, {"gridCentr-small.txt", "gridAreas-small.txt"});
 }

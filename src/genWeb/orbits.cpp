@@ -4,6 +4,8 @@
 #include "mathstuff.h"
 
 #include <QFile>
+#include <cstdio>
+#include <fstream>
 #include <QTextStream>
 
 //bool isCorrectCircularOrbit(const Orbits::CircularOrbit& orbit)
@@ -12,16 +14,37 @@
 //}
 
 // Читает и возвращает из текстового файла по строкам параметры круговых орбит.
-Orbits::Constellation Orbits::readCircularOrbits(const QString &filepath)
-{
-    Orbits::Constellation orbits;
-    QFile orbitsFile(filepath);
-    if (!orbitsFile.open(QIODevice::ReadOnly | QIODevice::Text))
-        return {};
+//Orbits::Constellation Orbits::readCircularOrbits(const QString &filepath)
+//{
+//    Orbits::Constellation orbits;
+//    QFile orbitsFile(filepath);
+//    if (!orbitsFile.open(QIODevice::ReadOnly | QIODevice::Text))
+//        return {};
 
-    QTextStream in(&orbitsFile);
+//    QTextStream in(&orbitsFile);
+//    Orbits::CircularOrbit orbit;
+//    while (!in.atEnd()) {
+//        in >> orbit.ascendingNode;
+//        in >> orbit.inclination;
+//        in >> orbit.initialPhase;
+//        in >> orbit.height;
+
+//        orbit.ascendingNode = MathStuff::degreesToRad(orbit.ascendingNode);
+//        orbit.inclination   = MathStuff::degreesToRad(orbit.inclination);
+//        orbit.initialPhase  = MathStuff::degreesToRad(orbit.initialPhase);
+//        orbit.height        = orbit.height*1000.0;
+//        if(in.status() == QTextStream::Ok)
+//            orbits.push_back(orbit);
+//    }
+//    return orbits;
+//}
+
+Orbits::Constellation Orbits::readCircularOrbits(const std::string& filepath)
+{
+    std::ifstream in(filepath);
+    Orbits::Constellation orbits;
     Orbits::CircularOrbit orbit;
-    while (!in.atEnd()) {
+    while (in.good()) {
         in >> orbit.ascendingNode;
         in >> orbit.inclination;
         in >> orbit.initialPhase;
@@ -31,56 +54,67 @@ Orbits::Constellation Orbits::readCircularOrbits(const QString &filepath)
         orbit.inclination   = MathStuff::degreesToRad(orbit.inclination);
         orbit.initialPhase  = MathStuff::degreesToRad(orbit.initialPhase);
         orbit.height        = orbit.height*1000.0;
-        if(in.status() == QTextStream::Ok)
-            orbits.push_back(orbit);
+
+        orbits.push_back(orbit);
     }
     return orbits;
 }
+
+//void Orbits::printCircularOrbits(const Orbits::Constellation& orbits)
+//{
+//    QTextStream out(stdout);
+//    out << "Circular orbits:\n";
+//    for (const Orbits::CircularOrbit& orbit: orbits)
+//        out << Messages::circularOrbitMessage.arg(MathStuff::radToDegrees(orbit.ascendingNode), -7, 'g', 4)
+//                                             .arg(MathStuff::radToDegrees(orbit.inclination),   -7, 'g', 4)
+//                                             .arg(MathStuff::radToDegrees(orbit.initialPhase),  -7, 'g', 4)
+//                                             .arg(orbit.height / 1000.0);
+//    out.flush();
+//}
 
 void Orbits::printCircularOrbits(const Orbits::Constellation& orbits)
 {
-    QTextStream out(stdout);
-    out << "Circular orbits:\n";
+    printf("Circular orbits:\n");
     for (const Orbits::CircularOrbit& orbit: orbits)
-        out << Messages::circularOrbitMessage.arg(MathStuff::radToDegrees(orbit.ascendingNode), -7, 'g', 4)
-                                             .arg(MathStuff::radToDegrees(orbit.inclination),   -7, 'g', 4)
-                                             .arg(MathStuff::radToDegrees(orbit.initialPhase),  -7, 'g', 4)
-                                             .arg(orbit.height / 1000.0);
-    out.flush();
+        printf(Messages::circularOrbitMessage.c_str(),
+               MathStuff::radToDegrees(orbit.ascendingNode),
+               MathStuff::radToDegrees(orbit.inclination),
+               MathStuff::radToDegrees(orbit.initialPhase),
+               orbit.height / 1000.0);
 }
 
-Orbits::EllipticalConstellation Orbits::readEllipticalOrbits(const QString &filepath)
-{
-    Orbits::EllipticalConstellation orbits;
-    QFile orbitsFile(filepath);
-    if (!orbitsFile.open(QIODevice::ReadOnly | QIODevice::Text))
-        return {};
+//Orbits::EllipticalConstellation Orbits::readEllipticalOrbits(const QString &filepath)
+//{
+//    Orbits::EllipticalConstellation orbits;
+//    QFile orbitsFile(filepath);
+//    if (!orbitsFile.open(QIODevice::ReadOnly | QIODevice::Text))
+//        return {};
 
-    QTextStream in(&orbitsFile);
-    Orbits::EllipticalOrbit orbit;
-    while (!in.atEnd()) {
-        in >> orbit.ascendingNode;
-        in >> orbit.inclination;
-        in >> orbit.argumentOfPeriapsis;
+//    QTextStream in(&orbitsFile);
+//    Orbits::EllipticalOrbit orbit;
+//    while (!in.atEnd()) {
+//        in >> orbit.ascendingNode;
+//        in >> orbit.inclination;
+//        in >> orbit.argumentOfPeriapsis;
 
-        in >> orbit.pericenter;
-        in >> orbit.apocenter;
+//        in >> orbit.pericenter;
+//        in >> orbit.apocenter;
 
-        in >> orbit.meanAnomaly;
+//        in >> orbit.meanAnomaly;
 
-        orbit.ascendingNode = MathStuff::degreesToRad(orbit.ascendingNode);
-        orbit.inclination = MathStuff::degreesToRad(orbit.inclination);
-        orbit.argumentOfPeriapsis = MathStuff::degreesToRad(orbit.argumentOfPeriapsis);
-        orbit.meanAnomaly = MathStuff::degreesToRad(orbit.meanAnomaly);
+//        orbit.ascendingNode = MathStuff::degreesToRad(orbit.ascendingNode);
+//        orbit.inclination = MathStuff::degreesToRad(orbit.inclination);
+//        orbit.argumentOfPeriapsis = MathStuff::degreesToRad(orbit.argumentOfPeriapsis);
+//        orbit.meanAnomaly = MathStuff::degreesToRad(orbit.meanAnomaly);
 
-        orbit.apocenter  = orbit.apocenter  * 1000.0;
-        orbit.pericenter = orbit.pericenter * 1000.0;
+//        orbit.apocenter  = orbit.apocenter  * 1000.0;
+//        orbit.pericenter = orbit.pericenter * 1000.0;
 
-        if(in.status() == QTextStream::Ok)
-            orbits.push_back(orbit);
-    }
-    return orbits;
-}
+//        if(in.status() == QTextStream::Ok)
+//            orbits.push_back(orbit);
+//    }
+//    return orbits;
+//}
 
 double Orbits::solveKeplersEquation(const double t, const Orbits::EllipticalOrbit &orbit, const double eps)
 {
@@ -119,11 +153,6 @@ double Orbits::trueAnomaly(const double E, const double e)
     return 2.0*atan2( sqrt(1 + e)*sin(E / 2.0), sqrt(1 - e)*cos(E / 2.0) );
 }
 
-//double Orbits::EllipticalOrbit::height(const double E, const Orbits::EllipticalOrbit &orbit)
-//{
-//    return orbit.semiMajorAxis()*(1.0 - orbit.eccentricity()*cos(E));
-//}
-
 double Orbits::EllipticalOrbit::height(const double E) const
 {
     return semiMajorAxis()*(1.0 - eccentricity()*cos(E));
@@ -144,16 +173,16 @@ double Orbits::CircularOrbit::meanMotion() const
     return sqrt(Earth::mu / (semiMajorAxis()*semiMajorAxis()*semiMajorAxis()));
 }
 
-void Orbits::printEllipticalOrbits(const std::vector<Orbits::EllipticalOrbit> &orbits)
-{
-    QTextStream out(stdout);
-    out << "Elliptical orbits:\n";
-    for (const Orbits::EllipticalOrbit& orbit: orbits)
-        out << Messages::ellipticalOrbitMessage.arg(MathStuff::radToDegrees(orbit.ascendingNode),   -5, 'g', 4)
-                                               .arg(MathStuff::radToDegrees(orbit.inclination), -5, 'g', 4)
-                                               .arg(MathStuff::radToDegrees(orbit.argumentOfPeriapsis), -5, 'g', 4)
-                                               .arg(orbit.pericenter / 1000.0, -7, 'g', 5)
-                                               .arg(orbit.apocenter / 1000.0 , -7, 'g', 5)
-                                               .arg(MathStuff::radToDegrees(orbit.meanAnomaly), -5, 'g', 2)
-                                               .arg(orbit.period() / 60.0, -5, 'g', 2);
-}
+//void Orbits::printEllipticalOrbits(const std::vector<Orbits::EllipticalOrbit> &orbits)
+//{
+//    QTextStream out(stdout);
+//    out << "Elliptical orbits:\n";
+//    for (const Orbits::EllipticalOrbit& orbit: orbits)
+//        out << Messages::ellipticalOrbitMessage.arg(MathStuff::radToDegrees(orbit.ascendingNode),   -5, 'g', 4)
+//                                               .arg(MathStuff::radToDegrees(orbit.inclination), -5, 'g', 4)
+//                                               .arg(MathStuff::radToDegrees(orbit.argumentOfPeriapsis), -5, 'g', 4)
+//                                               .arg(orbit.pericenter / 1000.0, -7, 'g', 5)
+//                                               .arg(orbit.apocenter / 1000.0 , -7, 'g', 5)
+//                                               .arg(MathStuff::radToDegrees(orbit.meanAnomaly), -5, 'g', 2)
+//                                               .arg(orbit.period() / 60.0, -5, 'g', 2);
+//}

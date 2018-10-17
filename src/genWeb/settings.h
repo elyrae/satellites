@@ -1,7 +1,7 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
-#include <QString>
+#include <string>
 
 namespace Settings {
     struct Sets {
@@ -10,12 +10,11 @@ namespace Settings {
         double deltaT;       // Шаг расчета
     };
 
-    const Sets defaultParameters = { .coneAngle = 120.0,
-                                         .timeDuration = 3600.0,
-                                         .deltaT = 120.0 };
+    const Sets defaultParameters = {.coneAngle = 120.0, .timeDuration = 3600.0, .deltaT = 120.0};
 
-    Sets readSettings(const QString& iniFile);
-    void printAlgorithmSettings(const Sets& params);
+    Sets readSettings(const std::string& iniFile);
+    void printSettings(const Sets& params);
+
     bool isCorrectSets(const Sets& params);
 }
 
