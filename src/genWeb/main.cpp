@@ -26,10 +26,7 @@ void out_histogram()
     //settings.deltaT = 15.0;
     //SatelliteSurface::Surface surface = SatelliteSurface::compute(sphereGrid.centroids, orbits, parameters);
 
-
     auto timeData = Surface::computeTimeFull(centroids, orbits, settings);
-
-//    outHist.setRealNumberPrecision(6);
 
     std::ofstream outHist("hist_time.txt");
     for (size_t i = 0; i < timeData.size(); i++) {
@@ -53,6 +50,10 @@ void out_histogram()
 
 int main(int, char **)
 {
+    Examples::exampleGridGeneration(4);
+
+    auto orbits = Orbits::readCircularOrbits("circularOrbits.txt");
+    Orbits::printCircularOrbits(orbits);
 
     // Examples::swarm_optimisation();
     // Examples::example_surface_computation_circular();

@@ -4,15 +4,12 @@
 #include "swarm.h"
 #include "grid.h"
 
-#include <QTextStream>
 #include <QTime>
+#include <iostream>
 #include <random>
-#include <QFile>
-#include <QTextStream>
 
-void Examples::example_surface_computation_circular()
+void Examples::exampleSurfaceComputationCircular()
 {
-    QTextStream out(stdout);
     QTime timer;
 
     // Чтение сетки
@@ -37,13 +34,13 @@ void Examples::example_surface_computation_circular()
     double maxTime = Surface::computeTime(centroids, orbits, settings);
     auto elapsed = timer.elapsed();
 
-    out << "\nTime: " << elapsed << "ms.\n";
+    std::cout << "\nTime: " << elapsed << "ms.\n";
     //out << "Result: " << Surface::sumArea(sphereGrid, surface) << ")\n";
-    out << "Max time = " << maxTime << "\n";
+    std::cout << "Max time: " << maxTime << "\n";
     //Surface::writeToTextFile(surface, "computedSurface.txt");
 }
 
-//void Examples::example_surface_computation_elliptical()
+//void Examples::exampleSurfaceComputationElliptical()
 //{
 //    QTextStream out(stdout);
 //    QTime timer;
@@ -69,18 +66,6 @@ void Examples::example_surface_computation_circular()
 //    SatelliteSurface::writeToTextFile(surface, "computedSurface.txt");
 //}
 
-//double farea(const Opt::Point& orbitsVector)
-//{
-//    static bool ok = false;
-//    static const Grid::SphereGrid sphereGrid = Grid::readSphereGrid({"bigGridCentroids.txt", "bigGridAreas.txt"}, &ok);
-//    static QVector<Orbits::CircularOrbit> orbits = Orbits::readCircularOrbits("circularOrbits.txt");
-//    static const SatelliteSurface::Settings parameters = SatelliteSurface::readSettings("settings.ini");
-
-//    orbits[0].ascendingNode = orbitsVector[0];
-//    orbits[1].ascendingNode = orbitsVector[1];
-//    return SatelliteSurface::computeArea(sphereGrid, orbits, parameters) / 12.5654;
-//}
-
 double max(const std::pair<double, double> p)
 {
     return (p.first > p.second) ? p.first : p.second;
@@ -96,9 +81,6 @@ double ftime(const Opt::Point& orbitsVector)
     const double fullArea = 12.5513;
     const double reducedTimeStep = 240.0;
 
-    //static bool ok = false;
-    //static const Grid::SphereGrid sphereGrid = Grid::readGrid({"gridCentr-small.txt",
-    //                                                           "gridAreas-small.txt"}, &ok);
     static const Grid::Centroids centroids = Grid::readCentroids("gridCentr-small.txt");
     static const Grid::Areas areas = Grid::readAreas("gridAreas-small.txt");
 
@@ -249,7 +231,7 @@ double ftime(const Opt::Point& orbitsVector)
 //    histoFile.close();
 //}
 
-void Examples::swarm_optimisation()
+void Examples::SwarmOptimisation()
 {
     Orbits::Constellation orbits = Orbits::readCircularOrbits("circularOrbits.txt");
     Orbits::printCircularOrbits(orbits);
@@ -280,8 +262,7 @@ void Examples::swarm_optimisation()
     p.maxIterations = 20;
     auto sol = ParticleSwarmMethod::optimize(ftime, region, Opt::SearchType::SearchMinimum, p, true, false);
 
-    QTextStream out(stdout);
-    out << "Answer: " << sol.second << "\n";
+    std::cout << "Answer: " << sol.second << "\n";
 
 //    QTextStream out(stdout);
 //    out << "Answer: " << ftimeF(sol.first) << "\n";
@@ -301,16 +282,14 @@ void Examples::swarm_optimisation()
 //    out_histogram(orbits);
 }
 
-void Examples::example_grid_generation()
+void Examples::exampleGridGeneration(const int iterations)
 {
-    auto grid = Grid::generate(4);
+    auto grid = Grid::generate(iterations);
     auto centroids = Grid::centroids(grid);
     auto areas = Grid::areas(grid);
 
-    Grid::SphereGrid sphereGrid;
-    sphereGrid.areas = areas;
-    sphereGrid.centroids = centroids;
-
-    // Grid::writeTriangularGrid(grid, {"gridNodes-small.txt", "gridCells-small.txt"});
-    // Grid::writeSphereGrid(sphereGrid, {"gridCentr-small.txt", "gridAreas-small.txt"});
+    Grid::writeNodes(grid.nodes, "gridNodesNew.txt");
+    Grid::writeCells(grid.cells, "gridCellsNew.txt");
+    Grid::writeAreas(areas, "gridAreasNew.txt");
+    Grid::writeCentroids(centroids, "gridCentroidsNew.txt");
 }
