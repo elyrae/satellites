@@ -25,7 +25,7 @@ void Examples::example_surface_computation_circular()
     Orbits::printCircularOrbits(orbits);
 
     Settings::Sets settings = Settings::readSettings("settings.ini");
-    Settings::printAlgorithmSettings(settings);
+    Settings::printSettings(settings);
 
     timer.start();
 
@@ -279,7 +279,6 @@ void Examples::swarm_optimisation()
     p.phi = 2.0;
     p.maxIterations = 20;
     auto sol = ParticleSwarmMethod::optimize(ftime, region, Opt::SearchType::SearchMinimum, p, true, false);
-    //auto orbitsVector = sol.first;
 
     QTextStream out(stdout);
     out << "Answer: " << sol.second << "\n";
@@ -301,17 +300,6 @@ void Examples::swarm_optimisation()
 //    orbits[9].ascendingNode = orbitsVector[3];
 //    out_histogram(orbits);
 }
-
-
-//    for (int i = 0; i < opt; i++) {
-//        bound.push_back({0.0, 2.0*M_PI});
-//    }
-//    for (int i = 0; i < 2*sats; i++) {
-//        bound.append({0.0, 2.0*M_PI});
-//    }
-//    for (int i = 2*sats; i < 3*sats; i++) {
-//        bound.append({-M_PI/2.0, M_PI/2.0});
-//    }
 
 void Examples::example_grid_generation()
 {

@@ -10,18 +10,9 @@
 #include <fstream>
 #include <utility>
 
-// double mean(const std::vector<double>& v)
-// {
-//     double sum = 0.0;
-//     for (const double elem: v)
-//         sum = sum + elem;
-//     return sum/(1.0*v.size());
-// }
-
 void out_histogram()
 {
     // Чтение сетки
-    //bool ok = false;
     //Grid::SphereGrid sphereGrid = Grid::readGrid({"gridCentr-small.txt", "gridAreas-small.txt"}, &ok);
     Grid::Centroids centroids = Grid::readCentroids("gridCentr-small.txt");
 
@@ -35,9 +26,6 @@ void out_histogram()
     //settings.deltaT = 15.0;
     //SatelliteSurface::Surface surface = SatelliteSurface::compute(sphereGrid.centroids, orbits, parameters);
 
-//    QFile histoFile("hist_time.txt");
-//    histoFile.open(QIODevice::WriteOnly | QIODevice::Text);
-//    QTextStream outHist(&histoFile);
 
     auto timeData = Surface::computeTimeFull(centroids, orbits, settings);
 

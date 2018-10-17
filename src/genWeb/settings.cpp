@@ -5,19 +5,6 @@
 #include <cstdio>
 #include <iostream>
 
-//Settings::Sets Settings::readSettings(const QString &iniFile)
-//{
-//    QSettings settings(iniFile, QSettings::IniFormat);
-//    Settings::Sets parameters;
-//    const Settings::Sets defaults = Settings::defaultParameters;
-
-//    parameters.coneAngle    = settings.value("Satellites/ConeAngle", defaults.coneAngle).toDouble();
-//    parameters.deltaT       = settings.value("Orbits/DeltaT", 60.0).toDouble();
-//    parameters.timeDuration = settings.value("Orbits/TimeDuration", 60.0).toDouble() * 60.0;
-
-//    return Settings::isCorrectSets(parameters) ? parameters : defaults;
-//}
-
 Settings::Sets Settings::readSettings(const std::string& iniFile)
 {
     Settings::Sets parameters;

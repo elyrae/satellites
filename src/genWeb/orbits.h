@@ -3,7 +3,6 @@
 
 #include <string>
 #include <vector>
-//#include <QString>
 
 // Конечно же, круговая орбита является частным случаем эллиптической, но
 // такое разделение удобно, так как алгоритмы счета немного разные
@@ -45,7 +44,6 @@ namespace Orbits {
     double solveKeplersEquation(const double t, const EllipticalOrbit& orbit, const double eps = 1.0E-4);
     double trueAnomaly(const double E, const double e);
 
-    // Constellation readCircularOrbits(const QString& filepath);
     Constellation readCircularOrbits(const std::string& filepath);
     void printCircularOrbits(const Constellation& orbits);
 

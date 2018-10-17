@@ -3,10 +3,11 @@
 #include "messages.h"
 #include "mathstuff.h"
 
-#include <QFile>
+//#include <QFile>
 #include <cstdio>
+#include <cmath>
 #include <fstream>
-#include <QTextStream>
+//#include <QTextStream>
 
 //bool isCorrectCircularOrbit(const Orbits::CircularOrbit& orbit)
 //{
@@ -34,18 +35,6 @@ Orbits::Constellation Orbits::readCircularOrbits(const std::string& filepath)
     }
     return orbits;
 }
-
-//void Orbits::printCircularOrbits(const Orbits::Constellation& orbits)
-//{
-//    QTextStream out(stdout);
-//    out << "Circular orbits:\n";
-//    for (const Orbits::CircularOrbit& orbit: orbits)
-//        out << Messages::circularOrbitMessage.arg(MathStuff::radToDegrees(orbit.ascendingNode), -7, 'g', 4)
-//                                             .arg(MathStuff::radToDegrees(orbit.inclination),   -7, 'g', 4)
-//                                             .arg(MathStuff::radToDegrees(orbit.initialPhase),  -7, 'g', 4)
-//                                             .arg(orbit.height / 1000.0);
-//    out.flush();
-//}
 
 void Orbits::printCircularOrbits(const Orbits::Constellation& orbits)
 {

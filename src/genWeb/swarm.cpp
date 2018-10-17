@@ -1,19 +1,16 @@
 #include "swarm.h"
 #include "mathstuff.h"
 
-#include <QVector>
-#include <QTextStream>
-#include <QFile>
+#include <fstream>
 #include <random>
-#include <QTime>
-#include <algorithm>
+#include <iostream>
+#include <chrono>
 
 void outSwarmToFile(const std::vector<ParticleSwarmMethod::Swarm>& iterations)
 {
-    QFile file("outSwarm.txt");
-    file.open(QIODevice::WriteOnly | QIODevice::Text);
+    const std::string swarmFile = "outSwarm.txt";
 
-    QTextStream out(&file);
+    std::ofstream out(swarmFile);
     out << "\n{";
     for (size_t k = 0; k < iterations.size(); k++) {
         out << "{";
@@ -26,18 +23,16 @@ void outSwarmToFile(const std::vector<ParticleSwarmMethod::Swarm>& iterations)
         out << "}" << ((k < iterations.size() - 1) ? "," : "");
     }
     out << "}";
-    file.close();
 }
 
 void printBestPosition(const std::pair<Opt::Point, double>& g, const int elapsed)
 {
-    QTextStream out(stdout);
-    out.setRealNumberPrecision(4);
-    out << "[";
+    std::cout.precision(4);
+    std::cout << "[";
     for (size_t i = 0; i < g.first.size(); i++)
-        out << MathStuff::radToDegrees(g.first[i]) << ((i < g.first.size() - 1) ? ", " : "");
-    out.setRealNumberPrecision(6);
-    out << "]: " << g.second << "s, " << elapsed << "ms.\n";
+        std::cout << MathStuff::radToDegrees(g.first[i]) << ((i < g.first.size() - 1) ? ", " : "");
+    std::cout.precision(6);
+    std::cout << "]: " << g.second << "s, " << elapsed << " ms.\n";
 }
 
 //void printVariance(const ParticleSwarmMethod::Swarm& g, const int elapsed)
@@ -78,34 +73,30 @@ double mt_rand(const std::pair<double, double>& interval)
 }
 
 std::pair<Opt::Point, double> ParticleSwarmMethod::optimize(const Opt::TargetFunction targetF,
-                                                            const ParticleSwarmMethod::Region& bound,
+                                                            const ParticleSwarmMethod::Region& reg,
                                                             const Opt::SearchType searchType,
                                                             const ParticleSwarmMethod::Parameters& parameters,
                                                             const bool debugMode, const bool writeSwarm)
 {
-    QTextStream out(stdout);
-    QTime timer;
-
     std::vector<ParticleSwarmMethod::Swarm> iterations;
     ParticleSwarmMethod::Swarm swarm(parameters.S), swarmVelocities(parameters.S);
     for (size_t i = 0; i < swarm.size(); i++) {
-        swarm[i].resize(bound.size());
-        swarmVelocities[i].resize(bound.size());
+        swarm[i].resize(reg.size());
+        swarmVelocities[i].resize(reg.size());
         for (size_t j = 0; j < swarm[i].size(); j++) {
-            swarm[i][j] = mt_rand(bound[j]);
-            swarmVelocities[i][j] = mt_rand({-abs(bound[j].first - bound[j].second),
-                                              abs(bound[j].first - bound[j].second)});
+            swarm[i][j] = mt_rand(reg[j]);
+            swarmVelocities[i][j] = mt_rand({-abs(reg[j].first - reg[j].second),
+                                              abs(reg[j].first - reg[j].second)});
         }
-        //std::sort(swarm[i].begin(), swarm[i].begin() + 8);
     }
 
-    if (debugMode)
-        timer.start();
+    auto start = std::chrono::system_clock::now();
     auto g = bestSwarmPosition(targetF, swarm, searchType);
-    if (debugMode) {
-        printBestPosition(g, timer.elapsed());
-        timer.restart();
-    }
+    auto end = std::chrono::system_clock::now();
+    auto elapsed = end - start;
+
+    if (debugMode)
+        printBestPosition(g, elapsed.count());
     if (writeSwarm)
         iterations.push_back(swarm);
 
@@ -113,29 +104,35 @@ std::pair<Opt::Point, double> ParticleSwarmMethod::optimize(const Opt::TargetFun
     std::pair<Opt::Point, double> bestPositionCandidate;
     while (iteration < parameters.maxIterations) {
         if (debugMode) {
-            out << "Iteration " << iteration+1 << ": ";
-            out.flush();
+            std::cout << "Iteration " << iteration+1 << ": ";
+            std::cout.flush();
         }
+
         for (size_t i = 0; i < swarm.size(); i++)
             for (size_t j = 0; j < swarm[i].size(); j++) {
                 swarmVelocities[i][j] = parameters.omega*swarmVelocities[i][j]
                                       + parameters.phi*mt_rand({0.0, 1.0})*(g.first[j] - swarm[i][j]);
-                swarm[i][j] = swarm[i][j] + swarmVelocities[i][j];
+                swarm[i][j] += swarmVelocities[i][j];
             }
 
+        start = std::chrono::system_clock::now();
         bestPositionCandidate = bestSwarmPosition(targetF, swarm, searchType);
+        end = std::chrono::system_clock::now();
+        elapsed = end - start;
+
         if ((searchType == Opt::SearchType::SearchMaximum) ? (bestPositionCandidate.second > g.second)
                                                            : (g.second > bestPositionCandidate.second))
             g = bestPositionCandidate;
+
         if (debugMode) {
-            printBestPosition(g, timer.elapsed());
-            out.flush();
-            timer.restart();
+            printBestPosition(g, elapsed.count());
+            std::cout.flush();
         }
         if (writeSwarm)
             iterations.push_back(swarm);
         iteration++;
     }
+
     if (writeSwarm)
         outSwarmToFile(iterations);
     return g;
