@@ -3,8 +3,7 @@
 #include "messages.h"
 #include "mathstuff.h"
 
-#include <QFile>
-#include <QTextStream>
+#include <fstream>
 
 inline double horizon(const double H, const double alpha)
 {
@@ -258,18 +257,6 @@ Surface::Times Surface::computeTimeFull(const Grid::Centroids& centroids,
 //    return maxT;
 //}
 
-//double Surface::computeArea(const Grid::SphereGrid& sphereGrid, const Orbits::Constellation& orbits,
-//                            const Settings::Sets& parameters)
-//{
-//    auto surface = Surface::compute(sphereGrid.centroids, orbits, parameters);
-//    double area = 0.0;
-//    for (size_t i = 0; i < surface.size(); i++)
-//        if (surface[i] == 1)
-//            area = area + sphereGrid.areas[i];
-//    return area;
-//}
-
-//double Surface::sumArea(const Grid::SphereGrid& sphereGrid, const Surface::Surf& surface)
 double Surface::sumArea(const Grid::Areas& areas, const Surface::Surf& surface)
 {
     double area = 0.0;
@@ -279,21 +266,9 @@ double Surface::sumArea(const Grid::Areas& areas, const Surface::Surf& surface)
     return area;
 }
 
-void Surface::writeToTextFile(const Surface::Surf& surface, const QString& filepath)
+void Surface::writeToTextFile(const Surface::Surf& surface, const std::string& filepath)
 {
-    QFile surfaceFile(filepath);
-    if (!surfaceFile.open(QIODevice::WriteOnly | QIODevice::Text))
-        return;
-    QTextStream out(&surfaceFile);
+    std::ofstream out(filepath);
     for (const char surfElement: surface)
         out << (char)(surfElement + '0') << " ";
 }
-
-//void EarthGrid::setGrid(const Grid::SphereGrid &_grid)
-//{
-//    grid = _grid;
-
-//    surface.resize(grid.centroids.size());
-//    time.resize(grid.centroids.size());
-//    max_time.resize(grid.centroids.size());
-//}

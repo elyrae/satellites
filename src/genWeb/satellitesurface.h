@@ -5,7 +5,7 @@
 #include "orbits.h"
 #include "settings.h"
 
-#include <QString>
+#include <string>
 
 namespace Surface {
     // Каждому треугольнику сетки ставим в соответствие флаг "покрыт связью"
@@ -15,9 +15,6 @@ namespace Surface {
     using Times = std::vector<double>;
 
     // нахождение области покрытия группировкой
-//    Surf compute(const std::vector<Grid::Point>& centroids,
-//                 const Orbits::Constellation& orbits,
-//                 const Settings::Sets& parameters = Settings::defaultParameters);
     Surf compute(const Grid::Centroids& centroids,
                  const Orbits::Constellation& orbits,
                  const Settings::Sets& parameters = Settings::defaultParameters);
@@ -38,27 +35,9 @@ namespace Surface {
                           const Orbits::Constellation& orbits,
                           const Settings::Sets& parameters = Settings::defaultParameters);
 
-//    double computeArea(const Grid::SphereGrid& sphereGrid,
-//                       const Orbits::Constellation& orbits,
-//                       const Settings::Sets& parameters = Settings::defaultParameters);
-
     double sumArea(const Grid::Areas& areas, const Surf& surface);
 
-    void writeToTextFile(const Surf& surface, const QString& filepath);
+    void writeToTextFile(const Surf& surface, const std::string& filepath);
 }
-
-//class EarthGrid {
-//    Grid::SphereGrid grid;
-//    SatelliteSurface::Settings settings;
-
-//    std::vector<int> surface;
-//    std::vector<double> time;
-//    std::vector<double> max_time;
-//public:
-//    void setGrid(const Grid::SphereGrid& _grid);
-//    void setSettings(const Settings& _settings);
-
-//    double computeTime(const std::vector<Orbits::CircularOrbit>& orbits);
-//}
 
 #endif // SATELLITESURFACE_H

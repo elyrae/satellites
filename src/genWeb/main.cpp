@@ -1,16 +1,13 @@
 #include "grid.h"
 #include "satellitesurface.h"
 #include "orbits.h"
-//#include "simplex.h"
 #include "earth.h"
 #include "messages.h"
 #include "mathstuff.h"
 #include "examples.h"
-//#include "distances.h"
 
 #include <QTime>
-#include <QFile>
-#include <QTextStream>
+#include <fstream>
 #include <utility>
 
 // double mean(const std::vector<double>& v)
@@ -27,8 +24,6 @@ void out_histogram()
     //bool ok = false;
     //Grid::SphereGrid sphereGrid = Grid::readGrid({"gridCentr-small.txt", "gridAreas-small.txt"}, &ok);
     Grid::Centroids centroids = Grid::readCentroids("gridCentr-small.txt");
-//    if (!ok)
-//        return;
 
     // Чтение и печать орбит
     Orbits::Constellation orbits = Orbits::readCircularOrbits("circularOrbits.txt");
@@ -36,20 +31,22 @@ void out_histogram()
 
     // Вычисление области покрытия и сохранение результата в файл для визуализации в Mathematica.
     Settings::Sets settings = Settings::readSettings("settings.ini");
-    Settings::printAlgorithmSettings(settings);
+    Settings::printSettings(settings);
     //settings.deltaT = 15.0;
     //SatelliteSurface::Surface surface = SatelliteSurface::compute(sphereGrid.centroids, orbits, parameters);
 
-    QFile histoFile("hist_time.txt");
-    histoFile.open(QIODevice::WriteOnly | QIODevice::Text);
-    QTextStream outHist(&histoFile);
+//    QFile histoFile("hist_time.txt");
+//    histoFile.open(QIODevice::WriteOnly | QIODevice::Text);
+//    QTextStream outHist(&histoFile);
 
     auto timeData = Surface::computeTimeFull(centroids, orbits, settings);
 
-    outHist.setRealNumberPrecision(6);
+//    outHist.setRealNumberPrecision(6);
+
+    std::ofstream outHist("hist_time.txt");
     for (size_t i = 0; i < timeData.size(); i++) {
-        outHist << centroids.X[i] << " " << centroids.Y[i] << " " << centroids.Z[i] << " "
-                << timeData[i] << "\n";
+        //outHist << centroids.X[i] << " " << centroids.Y[i] << " " << centroids.Z[i] << " "
+        outHist << timeData[i] << "\n";
     }
     //    for (size_t i = 0; i < time_data.size(); i++) {
 //        outHist << "{" << centroids.X[i] << "," << centroids.Y[i] << ","
@@ -63,12 +60,13 @@ void out_histogram()
 //    }
         //outHist << time_data[i] << ( (i < time_data.size()-1) ? "," : "" );
     //outHist << "}";
-    histoFile.close();
+    outHist.close();
 }
 
 int main(int, char **)
 {
-    Examples::swarm_optimisation();
+
+    // Examples::swarm_optimisation();
     // Examples::example_surface_computation_circular();
     // Examples::example_surface_computation_elliptical();
     

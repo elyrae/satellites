@@ -1,12 +1,9 @@
 #include "settings.h"
 #include "messages.h"
+#include "INIReader.h"
 
-//#include <QString>
-//#include <QSettings>
-//#include <QTextStream>
 #include <cstdio>
 #include <iostream>
-#include "INIReader.h"
 
 //Settings::Sets Settings::readSettings(const QString &iniFile)
 //{

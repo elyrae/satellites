@@ -13,32 +13,7 @@
 //    return (0.0 <= orbit.psi);
 //}
 
-// Читает и возвращает из текстового файла по строкам параметры круговых орбит.
-//Orbits::Constellation Orbits::readCircularOrbits(const QString &filepath)
-//{
-//    Orbits::Constellation orbits;
-//    QFile orbitsFile(filepath);
-//    if (!orbitsFile.open(QIODevice::ReadOnly | QIODevice::Text))
-//        return {};
-
-//    QTextStream in(&orbitsFile);
-//    Orbits::CircularOrbit orbit;
-//    while (!in.atEnd()) {
-//        in >> orbit.ascendingNode;
-//        in >> orbit.inclination;
-//        in >> orbit.initialPhase;
-//        in >> orbit.height;
-
-//        orbit.ascendingNode = MathStuff::degreesToRad(orbit.ascendingNode);
-//        orbit.inclination   = MathStuff::degreesToRad(orbit.inclination);
-//        orbit.initialPhase  = MathStuff::degreesToRad(orbit.initialPhase);
-//        orbit.height        = orbit.height*1000.0;
-//        if(in.status() == QTextStream::Ok)
-//            orbits.push_back(orbit);
-//    }
-//    return orbits;
-//}
-
+// Чтение из текстового файла параметров круговых орбит.
 Orbits::Constellation Orbits::readCircularOrbits(const std::string& filepath)
 {
     std::ifstream in(filepath);
