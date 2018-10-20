@@ -30,9 +30,9 @@ Orbits::Constellation Orbits::readCircularOrbits(const std::string& filepath)
         orbit.initialPhase  = MathStuff::degreesToRad(orbit.initialPhase);
         orbit.height        = orbit.height*1000.0;
 
-        if (in.good())
+        //if (in.good())
             orbits.push_back(orbit);
-        else break;
+        //else break;
     }
     return orbits;
 }

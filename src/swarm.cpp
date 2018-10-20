@@ -4,7 +4,8 @@
 #include <fstream>
 #include <random>
 #include <iostream>
-#include <chrono>
+//#include <chrono>
+#include <ctime>
 
 void outSwarmToFile(const std::vector<ParticleSwarmMethod::Swarm>& iterations)
 {
@@ -90,13 +91,15 @@ std::pair<Opt::Point, double> ParticleSwarmMethod::optimize(const Opt::TargetFun
         }
     }
 
-    auto start = std::chrono::system_clock::now();
+    clock_t start = clock();
+    // auto start = std::chrono::system_clock::now();
     auto g = bestSwarmPosition(targetF, swarm, searchType);
-    auto end = std::chrono::system_clock::now();
-    auto elapsed = end - start;
+    clock_t end = clock();
+    // auto end = std::chrono::system_clock::now();
+    // auto elapsed = end - start; elapsed.count()
 
     if (debugMode)
-        printBestPosition(g, elapsed.count());
+        printBestPosition(g, (end - start) / (CLOCKS_PER_SEC / 1000));
     if (writeSwarm)
         iterations.push_back(swarm);
 
@@ -115,17 +118,19 @@ std::pair<Opt::Point, double> ParticleSwarmMethod::optimize(const Opt::TargetFun
                 swarm[i][j] += swarmVelocities[i][j];
             }
 
-        start = std::chrono::system_clock::now();
+        // start = std::chrono::system_clock::now();
+        start = clock();
         bestPositionCandidate = bestSwarmPosition(targetF, swarm, searchType);
-        end = std::chrono::system_clock::now();
-        elapsed = end - start;
+        end = clock();
+        // end = std::chrono::system_clock::now();
+        // elapsed = end - start;
 
         if ((searchType == Opt::SearchType::SearchMaximum) ? (bestPositionCandidate.second > g.second)
                                                            : (g.second > bestPositionCandidate.second))
             g = bestPositionCandidate;
 
         if (debugMode) {
-            printBestPosition(g, elapsed.count());
+            printBestPosition(g, (end - start) / (CLOCKS_PER_SEC / 1000));
             std::cout.flush();
         }
         if (writeSwarm)

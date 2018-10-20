@@ -1,6 +1,7 @@
 #include "grid.h"
 
 #include <fstream>
+#include <cmath>
 
 const int outPrecision = 12;
 

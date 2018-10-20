@@ -4,6 +4,7 @@
 #include "mathstuff.h"
 
 #include <fstream>
+#include <cmath>
 
 inline double horizon(const double H, const double alpha)
 {

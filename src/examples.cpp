@@ -4,15 +4,13 @@
 #include "swarm.h"
 #include "grid.h"
 
-//#include <QTime>
 #include <chrono>
 #include <iostream>
 #include <random>
+#include <algorithm>
 
 void Examples::exampleSurfaceComputationCircular()
 {
-    QTime timer;
-
     // Чтение сетки
     Grid::Centroids centroids = Grid::readCentroids("gridCentroidsNew.txt");
 
@@ -26,11 +24,11 @@ void Examples::exampleSurfaceComputationCircular()
     // Вычисление области покрытия.
     //Surface::Surf surface = Surface::compute(centroids, orbits, settings);
 
-    auto start = std::chrono::system_clock::now();
+    clock_t start = clock();
     double maxTime = Surface::computeTime(centroids, orbits, settings);
-    auto end = std::chrono::system_clock::now();
+    clock_t end = clock();
 
-    std::cout << "\nTiming: " << (end - start).count() << "ms.\n";
+    std::cout << "\nTiming: " << (end - start) / (CLOCKS_PER_SEC / 1000) << "ms.\n";
     //out << "Result: " << Surface::sumArea(sphereGrid, surface) << ")\n";
     std::cout << "Max time: " << maxTime << "\n";
     //Surface::writeToTextFile(surface, "computedSurface.txt");
@@ -62,14 +60,18 @@ void Examples::exampleSurfaceComputationCircular()
 //    SatelliteSurface::writeToTextFile(surface, "computedSurface.txt");
 //}
 
-double max(const std::pair<double, double> p)
-{
-    return (p.first > p.second) ? p.first : p.second;
-}
+// double max(const std::pair<double, double> p)
+// {
+//     return (p.first > p.second) ? p.first : p.second;
+// }
 
 inline double sqr(const double x)
 {
     return x*x;
+}
+
+double penalty(const double a, const double x, const double b) {
+    return sqr(std::max(0.0, x - b)) + sqr(std::max(0.0, a - x));
 }
 
 double ftime(const Opt::Point& orbitsVector)
@@ -77,11 +79,11 @@ double ftime(const Opt::Point& orbitsVector)
     const double fullArea = 12.5513;
     const double reducedTimeStep = 240.0;
 
-    static const Grid::Centroids centroids = Grid::readCentroids("gridCentr-small.txt");
-    static const Grid::Areas areas = Grid::readAreas("gridAreas-small.txt");
+    static const Grid::Centroids centroids = Grid::readCentroids("gridCentroidsNew.txt");
+    static const Grid::Areas areas = Grid::readAreas("gridAreasNew.txt");
 
     static Orbits::Constellation orbits = Orbits::readCircularOrbits("circularOrbits.txt");
-    static const Settings::Sets p = Settings::readSettings("settings.ini");
+    static const Settings::Sets sets = Settings::readSettings("settings.ini");
 
     // orbits[0].ascendingNode = orbitsVector[0];
     // orbits[1].ascendingNode = orbitsVector[0];
@@ -140,53 +142,45 @@ double ftime(const Opt::Point& orbitsVector)
     orbits[19].initialPhase = orbitsVector[6] + 4.0*orbitsVector[10];
     // orbits[23].initialPhase = orbitsVector[6] + 5.0*orbitsVector[10];
 
-    double penalty = 0.0;
-    const int params_out_region = 11;
-    for (int i = 0; i < params_out_region; i++) {
-        penalty += sqr( max({0.0, -orbitsVector[i]}) );
-        penalty += sqr( max({0.0,  orbitsVector[i] - 2.0*M_PI}) );
-    }
-    const int opt_psis = 3;
-    for (int i = 0; i < opt_psis - 1; i++)
-        penalty += sqr( max({0.0, orbitsVector[i] - orbitsVector[i+1]}) );
+    double p = 0.0;
+    // const int params_out_region = 11;
+    // for (int i = 0; i < params_out_region; i++) {
+    //     penalty += sqr( std::max(0.0, -orbitsVector[i]) );
+    //     penalty += sqr( std::max(0.0,  orbitsVector[i] - 2.0*M_PI) );
+    // }
+    p += penalty(0.0, orbitsVector[0], M_PI);
+    p += penalty(0.0, orbitsVector[1], M_PI);
+    p += penalty(0.0, orbitsVector[2], M_PI);
 
-    if (penalty > 0.01)
-        return penalty*1.0E8;
+    p += penalty(0.0, orbitsVector[3], 2.0*M_PI);
+    p += penalty(0.0, orbitsVector[4], 2.0*M_PI);
+    p += penalty(0.0, orbitsVector[5], 2.0*M_PI);
+    p += penalty(0.0, orbitsVector[6], 2.0*M_PI);
 
-    const Surface::Surf surf = Surface::compute(centroids, orbits,
-        {p.coneAngle, p.timeDuration, reducedTimeStep});
+    p += penalty(MathStuff::degreesToRad(70.0), orbitsVector[7], MathStuff::degreesToRad(80.0));
+    p += penalty(MathStuff::degreesToRad(70.0), orbitsVector[8], MathStuff::degreesToRad(80.0));
+    p += penalty(MathStuff::degreesToRad(70.0), orbitsVector[9], MathStuff::degreesToRad(80.0));
+    p += penalty(MathStuff::degreesToRad(70.0), orbitsVector[10],MathStuff::degreesToRad(80.0));
+
+    // p += penalty(orbitsVector[0], orbitsVector[0], orbitsVector[1]);
+    p += penalty(orbitsVector[0], orbitsVector[1], orbitsVector[2]);
+    // p += penalty(orbitsVector[1], orbitsVector[2], M_PI);
+    // const int opt_psis = 3;
+    // for (int i = 0; i < opt_psis - 1; i++)
+    //     penalty += sqr( std::max(0.0, orbitsVector[i] - orbitsVector[i+1]) );
+
+    if (p > 0.01)
+        return p*1.0E8;
+
+    const auto surf = Surface::compute(centroids, orbits, {sets.coneAngle, sets.timeDuration, reducedTimeStep});
     const double area = Surface::sumArea(areas, surf) / fullArea;
 
     double TStar = 0.0;
-    if (area < 0.99) { TStar = p.timeDuration + (1.0 - area)*10000.0; }
-    else             { TStar = Surface::computeTime(centroids, orbits, p); }
+    if (area < 0.99) { TStar = sets.timeDuration + (1.0 - area)*10000.0; }
+    else             { TStar = Surface::computeTime(centroids, orbits, sets); }
 
     return TStar;
 }
-
-//double ftimeF(const Opt::Point& orbitsVector)
-//{
-//    static bool ok = false;
-//    static const Grid::SphereGrid sphereGrid = Grid::readGrid({"bigGridCentroids.txt", "bigGridAreas.txt"}, &ok);
-//    static std::vector<Orbits::CircularOrbit> orbits = Orbits::readCircularOrbits("circularOrbits.txt");
-//    static const Settings::Sets p = Settings::readSettings("settings.ini");
-
-//    const int opt_params = 4;
-
-//    orbits[2].ascendingNode = orbitsVector[0];
-//    orbits[3].ascendingNode = orbitsVector[0];
-
-//    orbits[4].ascendingNode = orbitsVector[1];
-//    orbits[5].ascendingNode = orbitsVector[1];
-
-//    orbits[6].ascendingNode = orbitsVector[2];
-//    orbits[7].ascendingNode = orbitsVector[2];
-
-//    orbits[8].ascendingNode = orbitsVector[3];
-//    orbits[9].ascendingNode = orbitsVector[3];
-
-//    return Surface::computeTime(sphereGrid.centroids, orbits, p);
-//}
 
 void Examples::SwarmOptimisation()
 {
@@ -194,29 +188,29 @@ void Examples::SwarmOptimisation()
     Orbits::printCircularOrbits(orbits);
 
     ParticleSwarmMethod::Region region;
-//    const int optPars = 11;
-//    for (int i = 0; i < optPars; i++) {
-//        region.push_back({0.0, 2.0*M_PI});
-//    }
+
+    // восходящие узлы плоскостей. Восходящий узел одной из них положим равным нулю
+    region.push_back({0.0, 1.0*M_PI});
+    region.push_back({0.0, 1.0*M_PI});
+    region.push_back({0.0, 1.0*M_PI});
+
+    // начальные фазы
+    region.push_back({0.0, 2.0*M_PI});
     region.push_back({0.0, 2.0*M_PI});
     region.push_back({0.0, 2.0*M_PI});
     region.push_back({0.0, 2.0*M_PI});
 
-    region.push_back({0.0, 2.0*M_PI});
-    region.push_back({0.0, 2.0*M_PI});
-    region.push_back({0.0, 2.0*M_PI});
-    region.push_back({0.0, 2.0*M_PI});
-
-    region.push_back({0.0, MathStuff::degreesToRad(100.0)});
-    region.push_back({0.0, MathStuff::degreesToRad(100.0)});
-    region.push_back({0.0, MathStuff::degreesToRad(100.0)});
-    region.push_back({0.0, MathStuff::degreesToRad(100.0)});
+    // шаг начальной фазы для каждой плоскости
+    region.push_back({MathStuff::degreesToRad(70.0), MathStuff::degreesToRad(80.0)});
+    region.push_back({MathStuff::degreesToRad(70.0), MathStuff::degreesToRad(80.0)});
+    region.push_back({MathStuff::degreesToRad(70.0), MathStuff::degreesToRad(80.0)});
+    region.push_back({MathStuff::degreesToRad(70.0), MathStuff::degreesToRad(80.0)});
 
     ParticleSwarmMethod::Parameters p;
     p.swarmSize = 500;
     p.omega = -0.32;
     p.phi = 2.0;
-    p.maxIterations = 20;
+    p.maxIterations = 15;
     auto sol = ParticleSwarmMethod::optimize(ftime, region, Opt::SearchType::SearchMinimum, p, true, false);
 
     std::cout << "Optimization result: " << sol.second << "\n";
