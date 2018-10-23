@@ -60,11 +60,6 @@ void Examples::exampleSurfaceComputationCircular()
 //    SatelliteSurface::writeToTextFile(surface, "computedSurface.txt");
 //}
 
-// double max(const std::pair<double, double> p)
-// {
-//     return (p.first > p.second) ? p.first : p.second;
-// }
-
 inline double sqr(const double x)
 {
     return x*x;
@@ -112,6 +107,7 @@ double ftime(const Opt::Point& orbitsVector)
     orbits[18].ascendingNode = orbitsVector[2];
     orbits[19].ascendingNode = orbitsVector[2];
     // orbits[23].ascendingNode = orbitsVector[2];
+
     // ============================================
 
     orbits[0].initialPhase = orbitsVector[3] + 0.0*orbitsVector[7];
@@ -143,11 +139,6 @@ double ftime(const Opt::Point& orbitsVector)
     // orbits[23].initialPhase = orbitsVector[6] + 5.0*orbitsVector[10];
 
     double p = 0.0;
-    // const int params_out_region = 11;
-    // for (int i = 0; i < params_out_region; i++) {
-    //     penalty += sqr( std::max(0.0, -orbitsVector[i]) );
-    //     penalty += sqr( std::max(0.0,  orbitsVector[i] - 2.0*M_PI) );
-    // }
     p += penalty(0.0, orbitsVector[0], M_PI);
     p += penalty(0.0, orbitsVector[1], M_PI);
     p += penalty(0.0, orbitsVector[2], M_PI);
@@ -162,12 +153,7 @@ double ftime(const Opt::Point& orbitsVector)
     p += penalty(MathStuff::degreesToRad(70.0), orbitsVector[9], MathStuff::degreesToRad(80.0));
     p += penalty(MathStuff::degreesToRad(70.0), orbitsVector[10],MathStuff::degreesToRad(80.0));
 
-    // p += penalty(orbitsVector[0], orbitsVector[0], orbitsVector[1]);
     p += penalty(orbitsVector[0], orbitsVector[1], orbitsVector[2]);
-    // p += penalty(orbitsVector[1], orbitsVector[2], M_PI);
-    // const int opt_psis = 3;
-    // for (int i = 0; i < opt_psis - 1; i++)
-    //     penalty += sqr( std::max(0.0, orbitsVector[i] - orbitsVector[i+1]) );
 
     if (p > 0.01)
         return p*1.0E8;
@@ -187,6 +173,7 @@ void Examples::SwarmOptimisation()
     Orbits::Constellation orbits = Orbits::readCircularOrbits("circularOrbits.txt");
     Orbits::printCircularOrbits(orbits);
 
+    // задаём область поиска в методе роя частиц
     ParticleSwarmMethod::Region region;
 
     // восходящие узлы плоскостей. Восходящий узел одной из них положим равным нулю
@@ -213,7 +200,7 @@ void Examples::SwarmOptimisation()
     p.maxIterations = 15;
     auto sol = ParticleSwarmMethod::optimize(ftime, region, Opt::SearchType::SearchMinimum, p, true, false);
 
-    std::cout << "Optimization result: " << sol.second << "\n";
+    // std::cout << "Optimization result: " << sol.second << "\n";
 }
 
 void Examples::exampleGridGeneration(const int iterations)
