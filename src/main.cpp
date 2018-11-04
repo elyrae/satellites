@@ -11,7 +11,6 @@
 
 void writeTimeHistogram()
 {
-    std::cout << "Writing histogram" << std::endl;
     // Чтение сетки
     Grid::Centroids centroids = Grid::readCentroids("gridCentroidsNew.txt");
 

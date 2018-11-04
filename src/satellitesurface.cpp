@@ -6,18 +6,26 @@
 #include <fstream>
 #include <cmath>
 
+// старая формула для вычисления горизонта без учета возвышения спутника над горизонтом
+// inline double horizon(const double H, const double alpha)
+// {
+//     return (H*sin(alpha) < 1.0) ? cos(asin(H*sin(alpha)) - alpha) : (1.0 / H);
+// }
+
 inline double horizon(const double H, const double alpha)
 {
-    return (H*sin(alpha) < 1.0) ? cos(asin(H*sin(alpha)) - alpha) : (1.0 / H);
+    const double delta = MathStuff::degreesToRad(0.0); // требуемое возвышение спутника над горизонтом
+    const double alpha_star = asin(cos(delta) / H);
+
+    // return (alpha < alpha_star) ? cos(asin(H*sin(alpha)) - alpha) : sin(delta + alpha_star);
+    return sin(delta + alpha_star);
 }
 
-Surface::Surf Surface::compute(const Grid::Centroids& centroids,
-                               const Orbits::Constellation& orbits,
-                               const Settings::Sets& settings)
+Surface::Surf Surface::compute(const Grid::Centroids& centroids, const Orbits::Constellation& orbits, const Settings::Sets& settings)
 {
     const double alpha = MathStuff::degreesToRad(settings.coneAngle) / 2.0;
-    double  cos_node = 0.0, sin_node = 0.0, cos_i = 0.0, px = 0.0, py = 0.0, pz = 0.0,
-            sin_i = 0.0,    c_AnomalyPlusPhase = 0.0, s_AnomalyPlusPhase = 0.0;
+    double cosNode        = 0.0, sinNode        = 0.0, px         = 0.0, py         = 0.0, pz = 0.0,
+           cosInclination = 0.0, sinInclination = 0.0, cosAnomaly = 0.0, sinAnomaly = 0.0;
 
     Surface::Surf surface(centroids.X.size(), 0);
     double horiz = 0.0, t = 0.0, trueAnomaly = 0.0, semiMajorAxis = 0.0, meanMotion = 0.0;
@@ -26,19 +34,19 @@ Surface::Surf Surface::compute(const Grid::Centroids& centroids,
         meanMotion = sqrt(Earth::mu / (semiMajorAxis*semiMajorAxis*semiMajorAxis));
         horiz = horizon(semiMajorAxis / Earth::radius, alpha);
 
-        cos_i = cos(orbit.inclination);
-        sin_i = sin(orbit.inclination);
+        cosInclination = cos(orbit.inclination);
+        sinInclination = sin(orbit.inclination);
         t = 0.0;
         while (t < settings.timeDuration + settings.deltaT/2.0) {
             trueAnomaly = meanMotion*t;
-            cos_node = cos(orbit.ascendingNode - Earth::angularVelocity*t);
-            sin_node = sin(orbit.ascendingNode - Earth::angularVelocity*t);
-            c_AnomalyPlusPhase = cos(trueAnomaly + orbit.initialPhase);
-            s_AnomalyPlusPhase = sin(trueAnomaly + orbit.initialPhase);
+            cosNode = cos(orbit.ascendingNode - Earth::angularVelocity*t);
+            sinNode = sin(orbit.ascendingNode - Earth::angularVelocity*t);
+            cosAnomaly = cos(trueAnomaly + orbit.initialPhase);
+            sinAnomaly = sin(trueAnomaly + orbit.initialPhase);
 
-            px =       cos_node*c_AnomalyPlusPhase - cos_i*s_AnomalyPlusPhase*sin_node;
-            py = cos_i*cos_node*s_AnomalyPlusPhase +       c_AnomalyPlusPhase*sin_node;
-            pz = sin_i*s_AnomalyPlusPhase;
+            px =                cosNode*cosAnomaly - cosInclination*sinAnomaly*sinNode;
+            py = cosInclination*cosNode*sinAnomaly +                cosAnomaly*sinNode;
+            pz = sinInclination*sinAnomaly;
             for (size_t i = 0; i < surface.size(); i++)
                 surface[i] |= ((centroids.X[i]*px + centroids.Y[i]*py + centroids.Z[i]*pz) > horiz);
             t = t + settings.deltaT;
@@ -47,13 +55,11 @@ Surface::Surf Surface::compute(const Grid::Centroids& centroids,
     return surface;
 }
 
-double Surface::computeTime(const Grid::Centroids& centroids,
-                            const Orbits::Constellation& orbits,
-                            const Settings::Sets& settings)
+double Surface::computeTime(const Grid::Centroids& centroids, const Orbits::Constellation& orbits, const Settings::Sets& settings)
 {
     const double alpha = MathStuff::degreesToRad(settings.coneAngle) / 2.0;
     double cos_node = 0.0, sin_node = 0.0, cos_i = 0.0, cos_AnomalyPlusPhase = 0.0, sin_i = 0.0,
-           sin_AnomalyPlusPhase = 0.0, px = 0.0,          py = 0.0,         pz = 0.0;
+           sin_AnomalyPlusPhase = 0.0, px = 0.0, py = 0.0,         pz = 0.0;
 
     Surface::Surf    surface(centroids.X.size(), 0);
     std::vector<double> time(centroids.X.size(), 0.0); // Time, Dr. Freeman? Is it really that time again?
@@ -98,9 +104,7 @@ double Surface::computeTime(const Grid::Centroids& centroids,
     return max_time;
 }
 
-Surface::Times Surface::computeTimeFull(const Grid::Centroids& centroids,
-                                        const Orbits::Constellation& orbits,
-                                        const Settings::Sets& settings)
+Surface::Times Surface::computeTimeFull(const Grid::Centroids& centroids, const Orbits::Constellation& orbits, const Settings::Sets& settings)
 {
     const double alpha = MathStuff::degreesToRad(settings.coneAngle) / 2.0;
     double cos_node = 0.0, sin_node = 0.0, cos_i = 0.0, cos_AnomalyPlusPhase = 0.0, sin_i = 0.0,
@@ -262,7 +266,7 @@ double Surface::sumArea(const Grid::Areas& areas, const Surface::Surf& surface)
 {
     double area = 0.0;
     for (size_t i = 0; i < surface.size(); i++)
-        if (surface[i] == 1)
+        if (surface[i])
             area = area + areas[i];
     return area;
 }

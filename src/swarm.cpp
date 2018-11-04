@@ -4,7 +4,6 @@
 #include <fstream>
 #include <random>
 #include <iostream>
-//#include <chrono>
 #include <ctime>
 
 void outSwarmToFile(const std::vector<ParticleSwarmMethod::Swarm>& iterations)
@@ -26,14 +25,15 @@ void outSwarmToFile(const std::vector<ParticleSwarmMethod::Swarm>& iterations)
     out << "}";
 }
 
-void printBestPosition(const std::pair<Opt::Point, double>& g, const int elapsed)
+void printBestPosition(const int iteration, const std::pair<Opt::Point, double>& g, const int elapsed)
 {
     std::cout.precision(4);
-    std::cout << "[";
+    std::cout << "Iteration " << iteration+1 << ": [";
     for (size_t i = 0; i < g.first.size(); i++)
         std::cout << MathStuff::radToDegrees(g.first[i]) << ((i < g.first.size() - 1) ? ", " : "");
     std::cout.precision(6);
     std::cout << "]: " << g.second << "s, " << elapsed << " ms.\n";
+    // std::cout << g.second << " ";
 }
 
 //void printVariance(const ParticleSwarmMethod::Swarm& g, const int elapsed)
@@ -99,17 +99,17 @@ std::pair<Opt::Point, double> ParticleSwarmMethod::optimize(const Opt::TargetFun
     // auto elapsed = end - start; elapsed.count()
 
     if (debugMode)
-        printBestPosition(g, (end - start) / (CLOCKS_PER_SEC / 1000));
+        printBestPosition(0, g, (end - start) / (CLOCKS_PER_SEC / 1000));
     if (writeSwarm)
         iterations.push_back(swarm);
 
     int iteration = 0;
     std::pair<Opt::Point, double> bestPositionCandidate;
     while (iteration < parameters.maxIterations) {
-        if (debugMode) {
-            std::cout << "Iteration " << iteration+1 << ": ";
-            std::cout.flush();
-        }
+        // if (debugMode) {
+        //     std::cout << "Iteration " << iteration+1 << ": ";
+        //     std::cout.flush();
+        // }
 
         for (size_t i = 0; i < swarm.size(); i++)
             for (size_t j = 0; j < swarm[i].size(); j++) {
@@ -118,19 +118,16 @@ std::pair<Opt::Point, double> ParticleSwarmMethod::optimize(const Opt::TargetFun
                 swarm[i][j] += swarmVelocities[i][j];
             }
 
-        // start = std::chrono::system_clock::now();
         start = clock();
         bestPositionCandidate = bestSwarmPosition(targetF, swarm, searchType);
         end = clock();
-        // end = std::chrono::system_clock::now();
-        // elapsed = end - start;
 
         if ((searchType == Opt::SearchType::SearchMaximum) ? (bestPositionCandidate.second > g.second)
                                                            : (g.second > bestPositionCandidate.second))
             g = bestPositionCandidate;
 
         if (debugMode) {
-            printBestPosition(g, (end - start) / (CLOCKS_PER_SEC / 1000));
+            printBestPosition(iteration, g, (end - start) / (CLOCKS_PER_SEC / 1000));
             std::cout.flush();
         }
         if (writeSwarm)
