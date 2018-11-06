@@ -9,10 +9,10 @@
 #include <fstream>
 #include <iostream>
 
-void writeTimeHistogram()
+void writeTimeHistogram(const std::string &out_file)
 {
     // Чтение сетки
-    Grid::Centroids centroids = Grid::readCentroids("gridCentroidsNew.txt");
+    Grid::Centroids centroids = Grid::readCentroids("big/gridCentroidsNew.txt");
 
     // Чтение и печать орбит
     Orbits::Constellation orbits = Orbits::readCircularOrbits("circularOrbits.txt");
@@ -23,20 +23,21 @@ void writeTimeHistogram()
     Settings::printSettings(settings);
 
     auto timeData = Surface::computeTimeFull(centroids, orbits, settings);
-    std::ofstream outHist("timeHistogram.txt");
+    
+    std::ofstream outHist(out_file);
     for (size_t i = 0; i < timeData.size(); i++) {
         //outHist << centroids.X[i] << " " << centroids.Y[i] << " " << centroids.Z[i] << " "
         outHist << timeData[i] << "\n";
     }
 }
 
-int main(int, char **)
+int main(int, char *argv[])
 {
     // Examples::exampleGridGeneration(4);
 
-    // writeTimeHistogram();
+    writeTimeHistogram(argv[1]);
     
-    Examples::SwarmOptimisation();
+    // Examples::SwarmOptimisation();
 
     // Examples::example_surface_computation_circular();
     // Examples::example_surface_computation_elliptical();

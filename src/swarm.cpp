@@ -5,8 +5,9 @@
 #include <random>
 #include <iostream>
 #include <ctime>
+#include <omp.h>
 
-void outSwarmToFile(const std::vector<ParticleSwarmMethod::Swarm>& iterations)
+void outSwarmToFile(const std::vector<SwarmMethod::Swarm>& iterations)
 {
     const std::string swarmFile = "outSwarm.txt";
 
@@ -25,45 +26,61 @@ void outSwarmToFile(const std::vector<ParticleSwarmMethod::Swarm>& iterations)
     out << "}";
 }
 
-void printBestPosition(const int iteration, const std::pair<Opt::Point, double>& g, const int elapsed)
+void printBestPosition(const int iteration, const SwarmMethod::SwarmPosition &g, const int elapsed)
 {
-    std::cout.precision(4);
-    std::cout << "Iteration " << iteration+1 << ": [";
-    for (size_t i = 0; i < g.first.size(); i++)
-        std::cout << MathStuff::radToDegrees(g.first[i]) << ((i < g.first.size() - 1) ? ", " : "");
-    std::cout.precision(6);
-    std::cout << "]: " << g.second << "s, " << elapsed << " ms.\n";
+    // std::cout.precision(4);
+    // std::cout << "Iteration " << iteration+1 << ": [";
+    // for (size_t i = 0; i < g.pos.size(); i++)
+    //     std::cout << MathStuff::radToDegrees(g.pos[i]) << ((i < g.pos.size() - 1) ? ", " : "");
+    // std::cout.precision(6);
+    // std::cout << "]: " << g.value << "s, " << elapsed << " ms.\n";
     // std::cout << g.second << " ";
+    std::cout << g.pos.size() << "\n";
 }
 
-//void printVariance(const ParticleSwarmMethod::Swarm& g, const int elapsed)
-//{
+SwarmMethod::SwarmPosition comparePos(const SwarmMethod::SwarmPosition &a, const SwarmMethod::SwarmPosition &b) {
+    return (a.value < b.value) ? a : b;
+}
 
-//    QTextStream out(stdout);
-//    Opt::Point mean(g[0].size()), var(g[0].size());
-//    out << "[";
-//    for (size_t i = 0; i < g.first.size(); i++)
-//        out << MathStuff::radToDegrees(g.first[i]) << ((i < g.first.size() - 1) ? ", " : "");
-//    out << "]: " << g.second << "s, " << elapsed << "ms.";
-//}
+// #pragma omp declare reduction(minPosition: SwarmMethod::SwarmPosition: omp_out = comparePos(omp_out, omp_in))
 
-std::pair<Opt::Point, double> bestSwarmPosition(const Opt::TargetFunction targetF,
-                                                const ParticleSwarmMethod::Swarm& swarm,
-                                                const Opt::SearchType searchType)
+SwarmMethod::SwarmPosition bestSwarmPosition(const Opt::TargetFunction targetF, const SwarmMethod::Swarm& swarm)
 {
-    Opt::Point g = swarm[0];
-    double opt = targetF(g), value = 0.0;
+    SwarmMethod::SwarmPosition p;
+    p.pos = swarm[0];
+    p.value = targetF(p.pos);
 
-    //#pragma omp parallel for num_threads(2)
+    double currentF = 0.0;
+
+    // #pragma omp parallel for num_threads(2) reduction(minPosition : p) private(currentF)
     for (size_t i = 1; i < swarm.size(); i++) {
-        value = targetF(swarm[i]);
-        if ((searchType == Opt::SearchType::SearchMaximum) ? (value > opt) : (opt > value)) {
-            opt = value;
-            g = swarm[i];
+        currentF = targetF(swarm[i]);
+        if (currentF < p.value) {
+            p.pos = swarm[i];
+            p.value = currentF;
         }
     }
-    return {g, opt};
+
+    return p;
 }
+
+
+
+// std::pair<Opt::Point, double> bestSwarmPosition(const Opt::TargetFunction targetF, const SwarmMethod::Swarm& swarm)
+// {
+//     Opt::Point g = swarm[0];
+//     double opt = targetF(g), value = 0.0;
+
+//     //#pragma omp parallel for num_threads(2) reduction(opt : min) 
+//     for (size_t i = 1; i < swarm.size(); i++) {
+//         value = targetF(swarm[i]);
+//         if (value < opt) {
+//             opt = value;
+//             g = swarm[i];
+//         }
+//     }
+//     return {g, opt};
+// }
 
 double mt_rand(const std::pair<double, double>& interval)
 {
@@ -73,14 +90,12 @@ double mt_rand(const std::pair<double, double>& interval)
     return dist(gen);
 }
 
-std::pair<Opt::Point, double> ParticleSwarmMethod::optimize(const Opt::TargetFunction targetF,
-                                                            const ParticleSwarmMethod::Region& reg,
-                                                            const Opt::SearchType searchType,
-                                                            const ParticleSwarmMethod::Parameters& parameters,
-                                                            const bool debugMode, const bool writeSwarm)
+SwarmMethod::SwarmPosition SwarmMethod::optimize(const Opt::TargetFunction targetF, const SwarmMethod::Region& reg,
+                                                 const SwarmMethod::Parameters& parameters,
+                                                 const bool debugMode, const bool writeSwarm)
 {
-    std::vector<ParticleSwarmMethod::Swarm> iterations;
-    ParticleSwarmMethod::Swarm swarm(parameters.swarmSize), swarmVelocities(parameters.swarmSize);
+    std::vector<SwarmMethod::Swarm> iterations;
+    SwarmMethod::Swarm swarm(parameters.swarmSize), swarmVelocities(parameters.swarmSize);
     for (size_t i = 0; i < swarm.size(); i++) {
         swarm[i].resize(reg.size());
         swarmVelocities[i].resize(reg.size());
@@ -92,11 +107,8 @@ std::pair<Opt::Point, double> ParticleSwarmMethod::optimize(const Opt::TargetFun
     }
 
     clock_t start = clock();
-    // auto start = std::chrono::system_clock::now();
-    auto g = bestSwarmPosition(targetF, swarm, searchType);
+    auto g = bestSwarmPosition(targetF, swarm);
     clock_t end = clock();
-    // auto end = std::chrono::system_clock::now();
-    // auto elapsed = end - start; elapsed.count()
 
     if (debugMode)
         printBestPosition(0, g, (end - start) / (CLOCKS_PER_SEC / 1000));
@@ -104,26 +116,20 @@ std::pair<Opt::Point, double> ParticleSwarmMethod::optimize(const Opt::TargetFun
         iterations.push_back(swarm);
 
     int iteration = 0;
-    std::pair<Opt::Point, double> bestPositionCandidate;
+    SwarmMethod::SwarmPosition bestPositionCandidate;
     while (iteration < parameters.maxIterations) {
-        // if (debugMode) {
-        //     std::cout << "Iteration " << iteration+1 << ": ";
-        //     std::cout.flush();
-        // }
-
-        for (size_t i = 0; i < swarm.size(); i++)
-            for (size_t j = 0; j < swarm[i].size(); j++) {
-                swarmVelocities[i][j] = parameters.omega*swarmVelocities[i][j]
-                                      + parameters.phi*mt_rand({0.0, 1.0})*(g.first[j] - swarm[i][j]);
-                swarm[i][j] += swarmVelocities[i][j];
-            }
+        for (size_t i = 0; i < swarm.size();    i++)
+        for (size_t j = 0; j < swarm[i].size(); j++) {
+            swarmVelocities[i][j] = parameters.omega*swarmVelocities[i][j]
+                                  + parameters.phi*mt_rand({0.0, 1.0})*(g.pos[j] - swarm[i][j]);
+            swarm[i][j] += swarmVelocities[i][j];
+        }
 
         start = clock();
-        bestPositionCandidate = bestSwarmPosition(targetF, swarm, searchType);
+        bestPositionCandidate = bestSwarmPosition(targetF, swarm);
         end = clock();
 
-        if ((searchType == Opt::SearchType::SearchMaximum) ? (bestPositionCandidate.second > g.second)
-                                                           : (g.second > bestPositionCandidate.second))
+        if (bestPositionCandidate.value < g.value)
             g = bestPositionCandidate;
 
         if (debugMode) {
