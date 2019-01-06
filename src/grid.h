@@ -29,6 +29,12 @@ namespace Grid {
         std::vector<double> Y;
         std::vector<double> Z;
     };
+    struct Centroids_f {
+        std::vector<float> X;
+        std::vector<float> Y;
+        std::vector<float> Z;
+    };
+
 
     TriangularGrid generate(const int iterations);
 
@@ -40,10 +46,12 @@ namespace Grid {
     void writeCentroids(const std::vector<Point>& centroids, const std::string& file);
     void writeAreas(const std::vector<double>& areas, const std::string& file);
 
-    Nodes readNodes(const std::string& file);
-    Cells readCells(const std::string& file);
+    Nodes     readNodes(const std::string& file);
+    Cells     readCells(const std::string& file);
     Centroids readCentroids(const std::string& file);
-    Areas readAreas( const std::string& file);
+    Areas     readAreas(const std::string& file);
+
+    Centroids_f readCentroids_f(const std::string& file);
 }
 
 #endif // GRID_H

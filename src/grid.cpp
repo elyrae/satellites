@@ -210,6 +210,24 @@ Grid::Centroids Grid::readCentroids(const std::string &file)
     return centroids;
 }
 
+Grid::Centroids_f Grid::readCentroids_f(const std::string& file)
+{
+    std::ifstream in(file);
+    Grid::Centroids_f centroids;
+
+    float x = 0.0, y = 0.0, z = 0.0;
+    while (in.good()) {
+        in >> x;
+        in >> y;
+        in >> z;
+            
+        centroids.X.push_back(x);
+        centroids.Y.push_back(y);
+        centroids.Z.push_back(z);
+    }
+    return centroids;    
+}
+
 Grid::Areas Grid::readAreas(const std::string &file)
 {
     std::ifstream in(file);

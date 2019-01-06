@@ -11,6 +11,7 @@
 #include "messages.h"
 #include "mathstuff.h"
 #include "examples.h"
+
 #include "cuda_surface.cuh"
 
 const int SURFACE_SIZE       = 5120;
@@ -75,41 +76,74 @@ void random_fill(std::vector<Orbits::Constellation> &configs)
     }
 }
 
-    // for (size_t iconf = 0; iconf < configs.size(); ++iconf) {
-    //     Orbits::printCircularOrbits(configs[iconf]);
-    //     printf("\n");
-    // }    
+void print_first(const size_t n, const std::vector<float> &x, const std::vector<float> &y, const std::vector<float> &z)
+{
+    printf("x: ");
+    for (size_t i = 0; i < ((n < x.size()) ? n : x.size()); ++i)
+        printf("%5.2f ", x[i]);
+    printf("\ny: ");
+    for (size_t i = 0; i < ((n < x.size()) ? n : x.size()); ++i)
+        printf("%5.2f ", y[i]);
+    printf("\nz: ");
+    for (size_t i = 0; i < ((n < x.size()) ? n : x.size()); ++i)
+        printf("%5.2f ", z[i]);
+    printf("\n");
+}
 
 int main() {
-    Grid::Centroids centroids = Grid::readCentroids("../data/grids/centroids_5000.txt");
+    Grid::Centroids_f centroids = Grid::readCentroids_f("../data/grids/centroids_5000.txt");
     Settings::Sets sets = Settings::readSettings("settings.ini");
     Settings::printSettings(sets);
 
     const size_t sat_positions_size = CONFIGURATION_SIZE*CONFIGURATIONS*TIMESTEPS;
     const size_t surf_size          =       SURFACE_SIZE*CONFIGURATIONS*TIMESTEPS;
     std::vector<float> x(sat_positions_size), y(sat_positions_size), z(sat_positions_size), h(sat_positions_size);
+    std::vector<float> surf(surf_size);
     std::vector<Orbits::Constellation> configs(CONFIGURATIONS);
 
     random_fill(configs);
     fill_orbits(configs, sets, x, y, z, h);
+    print_first(10, x, y, z);
 
+    puts("\n");
     printf("%f MB for satellite positions\n", (3.0*sizeof(float)*sat_positions_size) / (1024.0*1024.0));
     printf("%f MB for surface flags\n",                    (sizeof(float)*surf_size) / (1024.0*1024.0));
     printf("%f MB for centroids\n",           (3.0*sizeof(float)*centroids.X.size()) / (1024.0*1024.0));
+    puts("\n");
 
-    CUDA_Surface::Points3D gpu_pos, gpu_centroids, cpu_pos(sat_positions_size, x.data(), y.data(), z.data());
-    CUDA_Surface::Surf surf;
+    CUDA_Surface::Points3D gpu_pos, cpu_pos(sat_positions_size, x.data(), y.data(), z.data()),
+                           gpu_centroids, cpu_centroids(centroids.X.size(), 
+                                                        centroids.X.data(), centroids.Y.data(), centroids.Z.data()); 
+    CUDA_Surface::Surf gpu_surf, cpu_surf(surf_size, surf.data());
     
     printf("Try to allocate memory on GPU\n");
 
     gpu_pos.allocate(sat_positions_size);
-    surf.allocate(surf_size);
+    gpu_surf.allocate(surf_size);
     gpu_centroids.allocate(centroids.X.size());
 
     printf("Success\n");
 
+    gpu_pos.load_from(cpu_pos);
+    gpu_surf.load_from(cpu_surf);
+    gpu_centroids.load_from(cpu_centroids);
+
+    printf("Success load to GPU\n");
+
+    std::fill(x.begin(), x.end(), 0.0);
+    std::fill(y.begin(), y.end(), 0.0);
+    std::fill(z.begin(), z.end(), 0.0);
+    print_first(10, x, y, z);
+
+    gpu_pos.save_to(cpu_pos);
+    gpu_surf.save_to(cpu_surf);
+    gpu_centroids.save_to(cpu_centroids);
+
+    printf("Success save from GPU\n");
+    print_first(10, x, y, z);
+
     gpu_pos.free();
-    surf.free();
+    gpu_surf.free();
     gpu_centroids.free();
 
     printf("Memory was successfully deallocated\n");
