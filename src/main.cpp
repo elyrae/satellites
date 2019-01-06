@@ -103,7 +103,7 @@ int main() {
 
     random_fill(configs);
     fill_orbits(configs, sets, x, y, z, h);
-    print_first(10, x, y, z);
+    // print_first(10, x, y, z);
 
     puts("\n");
     printf("%f MB for satellite positions\n", (3.0*sizeof(float)*sat_positions_size) / (1024.0*1024.0));
@@ -130,17 +130,12 @@ int main() {
 
     printf("Success load to GPU\n");
 
-    std::fill(x.begin(), x.end(), 0.0);
-    std::fill(y.begin(), y.end(), 0.0);
-    std::fill(z.begin(), z.end(), 0.0);
-    print_first(10, x, y, z);
-
     gpu_pos.save_to(cpu_pos);
     gpu_surf.save_to(cpu_surf);
     gpu_centroids.save_to(cpu_centroids);
 
     printf("Success save from GPU\n");
-    print_first(10, x, y, z);
+    // print_first(10, x, y, z);
 
     gpu_pos.free();
     gpu_surf.free();

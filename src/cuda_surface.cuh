@@ -20,18 +20,18 @@ namespace CUDA_Surface {
         void save_to(const Points3D &cpu) const;
     };
 
-    struct Surf {
+    struct Points1D {
         int size;
         float *s;
 
-        Surf() {}
-        Surf(const int _size, float *_s) : size(_size), s(_s) {}
+        Points1D() {}
+        Points1D(const int _size, float *_s) : size(_size), s(_s) {}
 
         void allocate();
         void allocate(const int _size);
         void free();
-        void load_from(const Surf &cpu) const;
-        void save_to(const Surf &gpu) const;
+        void load_from(const Points1D &cpu) const;
+        void save_to(const Points1D &gpu) const;
 
         // void compute_coverage(const Positions &cpu) const; 
     };
