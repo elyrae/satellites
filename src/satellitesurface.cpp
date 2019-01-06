@@ -5,6 +5,7 @@
 
 #include <fstream>
 #include <cmath>
+#include <algorithm>
 
 // старая формула для вычисления горизонта без учета возвышения спутника над горизонтом
 // inline double horizon(const double H, const double alpha)
@@ -14,7 +15,7 @@
 
 inline double horizon(const double H, const double alpha)
 {
-    const double delta = MathStuff::degreesToRad(0.0); // требуемое возвышение спутника над горизонтом
+    const double delta = MathStuff::degreesToRad(10.0); // требуемое возвышение спутника над горизонтом
     const double alpha_star = asin(cos(delta) / H);
 
     // return (alpha < alpha_star) ? cos(asin(H*sin(alpha)) - alpha) : sin(delta + alpha_star);
@@ -55,6 +56,110 @@ Surface::Surf Surface::compute(const Grid::Centroids& centroids, const Orbits::C
     return surface;
 }
 
+// double Surface::computeTime(const Grid::Centroids& centroids, const Orbits::Constellation& orbits, const Settings::Sets& settings)
+// {
+//     const double alpha = MathStuff::degreesToRad(settings.coneAngle) / 2.0;
+
+//     Surface::Surf    surface(centroids.X.size(), 0);
+//     std::vector<double> time(centroids.X.size(), 0.0); // Time, Dr. Freeman? Is it really that time again?
+
+//     double max_time = 0.0; // semiMajorAxis = 0.0, meanAngularVelocity = 0.0;
+//     size_t timesteps = floor(settings.timeDuration / settings.deltaT);
+//     std::vector<double>  px(orbits.size()*timesteps, 0.0);
+//     std::vector<double>  py(orbits.size()*timesteps, 0.0);
+//     std::vector<double>  pz(orbits.size()*timesteps, 0.0);
+//     std::vector<double> hor(orbits.size()*timesteps, 0.0);
+
+//     const int THREADS = 4;
+//     #pragma omp parallel num_threads(THREADS)
+//     {
+//         #pragma omp for
+//         for (int i = 0; i < orbits.size(); ++i) {
+//             double semiMajorAxis = orbits[i].semiMajorAxis();
+//             double meanAngularVelocity = sqrt(Earth::mu / (semiMajorAxis*semiMajorAxis*semiMajorAxis));        
+//             double cos_i = cos(orbits[i].inclination);
+//             double sin_i = sin(orbits[i].inclination);        
+        
+//             for (int j = 0; j < timesteps; ++j) {
+//                 double t = j*settings.deltaT;
+
+//                 double cos_node = cos(orbits[i].ascendingNode - Earth::angularVelocity*t);
+//                 double sin_node = sin(orbits[i].ascendingNode - Earth::angularVelocity*t);
+//                 double cos_AnomalyPlusPhase = cos(meanAngularVelocity*t + orbits[i].initialPhase);
+//                 double sin_AnomalyPlusPhase = sin(meanAngularVelocity*t + orbits[i].initialPhase);
+
+//                 px[j*orbits.size()  + i] =       cos_node*cos_AnomalyPlusPhase - cos_i*sin_AnomalyPlusPhase*sin_node;
+//                 py[j*orbits.size()  + i] = cos_i*cos_node*sin_AnomalyPlusPhase +       cos_AnomalyPlusPhase*sin_node;
+//                 pz[j*orbits.size()  + i] = sin_i*sin_AnomalyPlusPhase;
+//                 hor[j*orbits.size() + i] = horizon(semiMajorAxis / Earth::radius, alpha);            
+//             }
+//         }
+
+//         for (size_t i = 0; i < timesteps; ++i) { // timestep
+//             #pragma omp for
+//             for (size_t k = 0; k < surface.size(); ++k) // point              
+//             for (size_t j = 0; j <  orbits.size(); ++j) // orbit           
+//                 surface[k] |= ((centroids.X[k]*px[i*orbits.size() + j] 
+//                               + centroids.Y[k]*py[i*orbits.size() + j] 
+//                               + centroids.Z[k]*pz[i*orbits.size() + j]) > hor[i*orbits.size() + j]);
+               
+//             #pragma omp for reduction(max : max_time)                 
+//             for (size_t i = 0; i < surface.size(); i++) {
+//                 if (surface[i]) {
+//                     max_time = std::max(time[i], max_time);
+//                     time[i] = 0.0;
+//                 }
+//                 else time[i] += settings.deltaT;
+//                 surface[i] = 0;
+//             }          
+//         }
+
+//         #pragma omp for reduction(max : max_time)
+//         for (size_t i = 0; i < surface.size(); i++)
+//             max_time = std::max(max_time, time[i]);        
+//     }
+//     return max_time;
+// }
+
+    // double cos_node = 0.0,             sin_node = 0.0,             //px = 0.0,
+    //        cos_i = 0.0,                sin_i = 0.0,                //py = 0.0,
+    //        cos_AnomalyPlusPhase = 0.0, sin_AnomalyPlusPhase = 0.0; //pz = 0.0;
+
+    // for (size_t i = 0; i < surface.size(); i++)
+    //     max_time = std::max(max_time, time[i]);
+
+    // for (int i = 0; i < orbits.size(); ++i) {
+    //     double semiMajorAxis = orbits[i].semiMajorAxis();
+    //     double meanAngularVelocity = sqrt(Earth::mu / (semiMajorAxis*semiMajorAxis*semiMajorAxis));        
+    //     double cos_i = cos(orbits[i].inclination);
+    //     double sin_i = sin(orbits[i].inclination);        
+        
+    //     for (int j = 0; j < timesteps; ++j) {
+    //         double t = j*settings.deltaT;
+
+    //         double cos_node = cos(orbits[i].ascendingNode - Earth::angularVelocity*t);
+    //         double sin_node = sin(orbits[i].ascendingNode - Earth::angularVelocity*t);
+    //         double cos_AnomalyPlusPhase = cos(meanAngularVelocity*t + orbits[i].initialPhase);
+    //         double sin_AnomalyPlusPhase = sin(meanAngularVelocity*t + orbits[i].initialPhase);
+
+    //         px[j*orbits.size()  + i] =       cos_node*cos_AnomalyPlusPhase - cos_i*sin_AnomalyPlusPhase*sin_node;
+    //         py[j*orbits.size()  + i] = cos_i*cos_node*sin_AnomalyPlusPhase +       cos_AnomalyPlusPhase*sin_node;
+    //         pz[j*orbits.size()  + i] = sin_i*sin_AnomalyPlusPhase;
+    //         hor[j*orbits.size() + i] = horizon(semiMajorAxis / Earth::radius, alpha);            
+    //     }
+    // }
+
+            // #pragma omp for reduction(max : max_time)
+            // for (size_t j = 0; j < surface.size(); ++j) {
+            //     max_time =                       max_time*(1 - surface[j]) + std::max(time[j], max_time)*surface[j];
+            //     time[j]     = (time[j] + settings.deltaT)*(1 - surface[j]);
+            // }
+
+        // for (size_t j = 0; j < surface.size(); ++j)
+        //     max_time[j] =                 max_time[j]*(1 - surface[j]) + max(time[j], max_time[j])*surface[j];
+        // for (size_t j = 0; j < surface.size(); ++j)
+        //     time[j]     = (time[j] + settings.deltaT)*(1 - surface[j]) +                         0*surface[j]; 
+
 double Surface::computeTime(const Grid::Centroids& centroids, const Orbits::Constellation& orbits, const Settings::Sets& settings)
 {
     const double alpha = MathStuff::degreesToRad(settings.coneAngle) / 2.0;
@@ -88,19 +193,28 @@ double Surface::computeTime(const Grid::Centroids& centroids, const Orbits::Cons
         }
         for (size_t i = 0; i < surface.size(); i++) {
             if (surface[i]) {
-                if (time[i] > max_time)
-                    max_time = time[i];
+                max_time = std::max(time[i], max_time);
+                // if (time[i] > max_time)
+                //     max_time = time[i];
                 time[i] = 0.0;
             }
             else time[i] += settings.deltaT;
             surface[i] = 0;
         }
+
+        // for (size_t i = 0; i < surface.size(); i++)
+        //     max_time = max_time*(1 - surface[i]) + std::max(time[i], max_time)*surface[i];
+        // for (size_t i = 0; i < surface.size(); i++)
+        //     time[i]     = (time[i] + settings.deltaT)*(1 - surface[i]) +                         0*surface[i];                
         t = t + settings.deltaT;
     }
-    for (size_t i = 0; i < surface.size(); i++) {
-        if (time[i] > max_time)
-            max_time = time[i];
-    }
+
+    for (size_t i = 0; i < surface.size(); i++)
+        max_time = std::max(max_time, time[i]);    
+    // for (size_t i = 0; i < surface.size(); i++) {
+    //     if (time[i] > max_time)
+    //         max_time = time[i];
+    // }
     return max_time;
 }
 

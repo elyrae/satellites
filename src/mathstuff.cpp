@@ -1,5 +1,4 @@
 #include "mathstuff.h"
-#include <cmath>
 
 double MathStuff::degreesToRad(const double x)
 {

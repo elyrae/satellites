@@ -28,33 +28,33 @@ void outSwarmToFile(const std::vector<SwarmMethod::Swarm>& iterations)
 
 void printBestPosition(const int iteration, const SwarmMethod::SwarmPosition &g, const int elapsed)
 {
-    // std::cout.precision(4);
-    // std::cout << "Iteration " << iteration+1 << ": [";
-    // for (size_t i = 0; i < g.pos.size(); i++)
-    //     std::cout << MathStuff::radToDegrees(g.pos[i]) << ((i < g.pos.size() - 1) ? ", " : "");
-    // std::cout.precision(6);
-    // std::cout << "]: " << g.value << "s, " << elapsed << " ms.\n";
-    // std::cout << g.second << " ";
-    std::cout << g.pos.size() << "\n";
+    std::cout.precision(4);
+    std::cout << "Iteration " << iteration+1 << ": [";
+    for (size_t i = 0; i < g.pos.size(); i++)
+        std::cout << MathStuff::radToDegrees(g.pos[i]) << ((i < g.pos.size() - 1) ? ", " : "");
+    std::cout.precision(6);
+    std::cout << "]: " << g.value << "s, " << elapsed << " ms.\n";
+    //std::cout << g.second << " ";
+    
+    //std::cout << g.pos.size() << "\n";
 }
 
 SwarmMethod::SwarmPosition comparePos(const SwarmMethod::SwarmPosition &a, const SwarmMethod::SwarmPosition &b) {
     return (a.value < b.value) ? a : b;
 }
 
-// #pragma omp declare reduction(minPosition: SwarmMethod::SwarmPosition: omp_out = comparePos(omp_out, omp_in))
-
-SwarmMethod::SwarmPosition bestSwarmPosition(const Opt::TargetFunction targetF, const SwarmMethod::Swarm& swarm)
+SwarmMethod::SwarmPosition bestSwarmPosition(const SwarmMethod::Function F, const SwarmMethod::Swarm& swarm)
 {
     SwarmMethod::SwarmPosition p;
     p.pos = swarm[0];
-    p.value = targetF(p.pos);
+    p.value = F(p.pos);
 
     double currentF = 0.0;
 
-    // #pragma omp parallel for num_threads(2) reduction(minPosition : p) private(currentF)
+    // #pragma omp declare reduction(bestPosition: SwarmMethod::SwarmPosition: omp_out = comparePos(omp_out, omp_in))
+    // #pragma omp parallel for num_threads(2) reduction(bestPosition : p) private(currentF)
     for (size_t i = 1; i < swarm.size(); i++) {
-        currentF = targetF(swarm[i]);
+        currentF = F(swarm[i]);
         if (currentF < p.value) {
             p.pos = swarm[i];
             p.value = currentF;
@@ -82,57 +82,64 @@ SwarmMethod::SwarmPosition bestSwarmPosition(const Opt::TargetFunction targetF, 
 //     return {g, opt};
 // }
 
-double mt_rand(const std::pair<double, double>& interval)
+// double mt_rand(const std::pair<double, double>& interval)
+// {
+//     static std::random_device rd;
+//     static std::mt19937 gen(rd());
+//     std::uniform_real_distribution<> dist(interval.first, interval.second);
+//     return dist(gen);
+// }
+
+double rnd(const double a, const double b)
 {
-    static std::random_device rd;
-    static std::mt19937 gen(rd());
-    std::uniform_real_distribution<> dist(interval.first, interval.second);
-    return dist(gen);
+    return a + (b - a)*((double) rand()/RAND_MAX);
 }
 
-SwarmMethod::SwarmPosition SwarmMethod::optimize(const Opt::TargetFunction targetF, const SwarmMethod::Region& reg,
-                                                 const SwarmMethod::Parameters& parameters,
-                                                 const bool debugMode, const bool writeSwarm)
+
+SwarmMethod::SwarmPosition SwarmMethod::optimize(const SwarmMethod::Function F, const SwarmMethod::Region& reg,
+                                                 const SwarmMethod::Parameters& params,
+                                                 const bool debug, const bool writeSwarm)
 {
-    std::vector<SwarmMethod::Swarm> iterations;
-    SwarmMethod::Swarm swarm(parameters.swarmSize), swarmVelocities(parameters.swarmSize);
+    std::vector<SwarmMethod::Swarm> iterations(0);
+    SwarmMethod::Swarm swarm(params.swarmSize), swarmVelocities(params.swarmSize);
+    srand(time(NULL));
+
     for (size_t i = 0; i < swarm.size(); i++) {
         swarm[i].resize(reg.size());
         swarmVelocities[i].resize(reg.size());
         for (size_t j = 0; j < swarm[i].size(); j++) {
-            swarm[i][j] = mt_rand(reg[j]);
-            swarmVelocities[i][j] = mt_rand({-abs(reg[j].first - reg[j].second),
-                                              abs(reg[j].first - reg[j].second)});
+            swarm[i][j] = rnd(reg[j].first, reg[j].second);
+            swarmVelocities[i][j] = abs(reg[j].first - reg[j].second)*rnd(-1.0, 1.0);
         }
     }
 
     clock_t start = clock();
-    auto g = bestSwarmPosition(targetF, swarm);
+    auto g = bestSwarmPosition(F, swarm);
     clock_t end = clock();
 
-    if (debugMode)
+    if (debug)
         printBestPosition(0, g, (end - start) / (CLOCKS_PER_SEC / 1000));
     if (writeSwarm)
         iterations.push_back(swarm);
 
     int iteration = 0;
     SwarmMethod::SwarmPosition bestPositionCandidate;
-    while (iteration < parameters.maxIterations) {
+    while (iteration < params.maxIterations) {
         for (size_t i = 0; i < swarm.size();    i++)
         for (size_t j = 0; j < swarm[i].size(); j++) {
-            swarmVelocities[i][j] = parameters.omega*swarmVelocities[i][j]
-                                  + parameters.phi*mt_rand({0.0, 1.0})*(g.pos[j] - swarm[i][j]);
+            swarmVelocities[i][j] = params.omega*swarmVelocities[i][j] 
+                                  + params.phi*rnd(0.0, 1.0)*(g.pos[j] - swarm[i][j]);
             swarm[i][j] += swarmVelocities[i][j];
         }
 
         start = clock();
-        bestPositionCandidate = bestSwarmPosition(targetF, swarm);
+        bestPositionCandidate = bestSwarmPosition(F, swarm);
         end = clock();
 
         if (bestPositionCandidate.value < g.value)
             g = bestPositionCandidate;
 
-        if (debugMode) {
+        if (debug) {
             printBestPosition(iteration, g, (end - start) / (CLOCKS_PER_SEC / 1000));
             std::cout.flush();
         }

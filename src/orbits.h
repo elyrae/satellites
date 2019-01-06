@@ -21,6 +21,18 @@ namespace Orbits {
         double meanMotion()    const; // средняя угловая скорость, рад/с
     };
 
+    struct CircularOrbit_f {
+        float ascendingNode; // долгота восходящего узла, рад
+        float inclination;   // наклонение, рад
+        float initialPhase;  // начальная фаза, рад
+
+        float height; // высота орбиты над уровнем моря, м
+        
+        float semiMajorAxis() const; // большая полуось = радиус Земли + высота орбиты
+        float period()        const; // период, c
+        float meanMotion()    const; // средняя угловая скорость, рад/с
+    };
+
     struct EllipticalOrbit {
         double ascendingNode;       // Долгота восходящего узла, рад
         double inclination;         // Наклонение, рад

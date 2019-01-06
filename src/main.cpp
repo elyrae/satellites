@@ -1,3 +1,9 @@
+#include <iostream>
+#include <math.h>
+#include <fstream>
+#include <ostream>
+#include <vector>
+
 #include "grid.h"
 #include "satellitesurface.h"
 #include "orbits.h"
@@ -5,42 +11,108 @@
 #include "messages.h"
 #include "mathstuff.h"
 #include "examples.h"
+#include "cuda_surface.cuh"
 
-#include <fstream>
-#include <iostream>
+const int SURFACE_SIZE       = 5120;
+const int CONFIGURATION_SIZE = 20;
+const int CONFIGURATIONS     = 100;
+const int TIMESTEPS          = 240;
 
-void writeTimeHistogram(const std::string &out_file)
+inline double horizon(const double H, const double alpha)
 {
-    // Чтение сетки
-    Grid::Centroids centroids = Grid::readCentroids("big/gridCentroidsNew.txt");
+    const double delta = MathStuff::degreesToRad(10.0); // требуемое возвышение спутника над горизонтом
+    const double alpha_star = asin(cos(delta) / H);
 
-    // Чтение и печать орбит
-    Orbits::Constellation orbits = Orbits::readCircularOrbits("circularOrbits.txt");
-    Orbits::printCircularOrbits(orbits);
+    return (alpha < alpha_star) ? cos(asin(H*sin(alpha)) - alpha) : sin(delta + alpha_star);
+    // return sin(delta + alpha_star);
+}
 
-    // Вычисление области покрытия и сохранение результата в файл для визуализации в Mathematica.
-    Settings::Sets settings = Settings::readSettings("settings.ini");
-    Settings::printSettings(settings);
+void fill_orbits(const std::vector<Orbits::Constellation> &configurations, const Settings::Sets &settings, 
+                 std::vector<float> &x, std::vector<float> &y, std::vector<float> &z, std::vector<float> &h)
+{
+    const double alpha = MathStuff::degreesToRad(settings.coneAngle) / 2.0;
+    const size_t configs = configurations.size();
+    for (size_t iconf = 0; iconf < configs; ++iconf) {
+        Orbits::Constellation orbits = configurations[iconf];
 
-    auto timeData = Surface::computeTimeFull(centroids, orbits, settings);
-    
-    std::ofstream outHist(out_file);
-    for (size_t i = 0; i < timeData.size(); i++) {
-        //outHist << centroids.X[i] << " " << centroids.Y[i] << " " << centroids.Z[i] << " "
-        outHist << timeData[i] << "\n";
+        for (size_t iorb = 0; iorb < orbits.size(); ++iorb) {
+            double semi_major_axis = orbits[iorb].semiMajorAxis();
+            double mean_angular_velocity = sqrt(Earth::mu / (semi_major_axis*semi_major_axis*semi_major_axis));        
+            double cos_i = cos(orbits[iorb].inclination);
+            double sin_i = sin(orbits[iorb].inclination);
+
+            for (size_t timestep = 0; timestep < TIMESTEPS; ++timestep) {
+                double t = timestep*settings.deltaT;
+                double cos_node = cos(orbits[iorb].ascendingNode - Earth::angularVelocity*t);
+                double sin_node = sin(orbits[iorb].ascendingNode - Earth::angularVelocity*t);
+                double cos_anomaly_plus_phase = cos(mean_angular_velocity*t + orbits[iorb].initialPhase);
+                double sin_anomaly_plus_phase = sin(mean_angular_velocity*t + orbits[iorb].initialPhase);
+
+                x[(timestep*configs + iconf)*orbits.size() + iorb] = (float) (      cos_node*cos_anomaly_plus_phase - cos_i*sin_anomaly_plus_phase*sin_node); 
+                y[(timestep*configs + iconf)*orbits.size() + iorb] = (float) (cos_i*cos_node*sin_anomaly_plus_phase +       cos_anomaly_plus_phase*sin_node); 
+                z[(timestep*configs + iconf)*orbits.size() + iorb] = (float) (sin_i*sin_anomaly_plus_phase                                                 );
+                h[(timestep*configs + iconf)*orbits.size() + iorb] = (float) (horizon(semi_major_axis / Earth::radius, alpha)                              );            
+            }
+        }
     }
 }
 
-int main(int, char *argv[])
+double rnd_d(const double a, const double b)
 {
-    // Examples::exampleGridGeneration(4);
+    return a + (b - a)*((double) rand()/RAND_MAX);
+}
 
-    writeTimeHistogram(argv[1]);
+void random_fill(std::vector<Orbits::Constellation> &configs)
+{
+    for (size_t iconf = 0; iconf < CONFIGURATIONS; ++iconf) {
+        configs[iconf].resize(CONFIGURATION_SIZE);
+        for (size_t iorb = 0; iorb < CONFIGURATION_SIZE; ++iorb) {
+            configs[iconf][iorb].ascendingNode = rnd_d(0.0, 2.0*M_PI);
+            configs[iconf][iorb].inclination   = rnd_d(0.0, 2.0*M_PI);
+            configs[iconf][iorb].initialPhase  = rnd_d(0.0, 2.0*M_PI);
+            configs[iconf][iorb].height        = 1500.0 * 1000.0;
+        }
+    }
+}
+
+    // for (size_t iconf = 0; iconf < configs.size(); ++iconf) {
+    //     Orbits::printCircularOrbits(configs[iconf]);
+    //     printf("\n");
+    // }    
+
+int main() {
+    Grid::Centroids centroids = Grid::readCentroids("../data/grids/centroids_5000.txt");
+    Settings::Sets sets = Settings::readSettings("settings.ini");
+    Settings::printSettings(sets);
+
+    const size_t sat_positions_size = CONFIGURATION_SIZE*CONFIGURATIONS*TIMESTEPS;
+    const size_t surf_size          =       SURFACE_SIZE*CONFIGURATIONS*TIMESTEPS;
+    std::vector<float> x(sat_positions_size), y(sat_positions_size), z(sat_positions_size), h(sat_positions_size);
+    std::vector<Orbits::Constellation> configs(CONFIGURATIONS);
+
+    random_fill(configs);
+    fill_orbits(configs, sets, x, y, z, h);
+
+    printf("%f MB for satellite positions\n", (3.0*sizeof(float)*sat_positions_size) / (1024.0*1024.0));
+    printf("%f MB for surface flags\n",                    (sizeof(float)*surf_size) / (1024.0*1024.0));
+    printf("%f MB for centroids\n",           (3.0*sizeof(float)*centroids.X.size()) / (1024.0*1024.0));
+
+    CUDA_Surface::Points3D gpu_pos, gpu_centroids, cpu_pos(sat_positions_size, x.data(), y.data(), z.data());
+    CUDA_Surface::Surf surf;
     
-    // Examples::SwarmOptimisation();
+    printf("Try to allocate memory on GPU\n");
 
-    // Examples::example_surface_computation_circular();
-    // Examples::example_surface_computation_elliptical();
+    gpu_pos.allocate(sat_positions_size);
+    surf.allocate(surf_size);
+    gpu_centroids.allocate(centroids.X.size());
+
+    printf("Success\n");
+
+    gpu_pos.free();
+    surf.free();
+    gpu_centroids.free();
+
+    printf("Memory was successfully deallocated\n");
     
     return 0;
 }
