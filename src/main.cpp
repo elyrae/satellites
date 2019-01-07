@@ -16,7 +16,7 @@
 
 const int SURFACE_SIZE       = 5120;
 const int CONFIGURATION_SIZE = 20;
-const int CONFIGURATIONS     = 100;
+const int CONFIGURATIONS     = 128;
 const int TIMESTEPS          = 240;
 
 inline double horizon(const double H, const double alpha)
@@ -49,10 +49,15 @@ void fill_orbits(const std::vector<Orbits::Constellation> &configurations, const
                 double cos_anomaly_plus_phase = cos(mean_angular_velocity*t + orbits[iorb].initialPhase);
                 double sin_anomaly_plus_phase = sin(mean_angular_velocity*t + orbits[iorb].initialPhase);
 
-                x[(timestep*configs + iconf)*orbits.size() + iorb] = (float) (      cos_node*cos_anomaly_plus_phase - cos_i*sin_anomaly_plus_phase*sin_node); 
-                y[(timestep*configs + iconf)*orbits.size() + iorb] = (float) (cos_i*cos_node*sin_anomaly_plus_phase +       cos_anomaly_plus_phase*sin_node); 
-                z[(timestep*configs + iconf)*orbits.size() + iorb] = (float) (sin_i*sin_anomaly_plus_phase                                                 );
-                h[(timestep*configs + iconf)*orbits.size() + iorb] = (float) (horizon(semi_major_axis / Earth::radius, alpha)                              );            
+                x[(timestep*orbits.size() + iorb)*configs + iconf] = (float) (      cos_node*cos_anomaly_plus_phase - cos_i*sin_anomaly_plus_phase*sin_node); 
+                y[(timestep*orbits.size() + iorb)*configs + iconf] = (float) (cos_i*cos_node*sin_anomaly_plus_phase +       cos_anomaly_plus_phase*sin_node); 
+                z[(timestep*orbits.size() + iorb)*configs + iconf] = (float) (sin_i*sin_anomaly_plus_phase                                                 );
+                h[(timestep*orbits.size() + iorb)*configs + iconf] = (float) (horizon(semi_major_axis / Earth::radius, alpha)                              );   
+
+                // x[(timestep*configs + iconf)*orbits.size() + iorb] = (float) (      cos_node*cos_anomaly_plus_phase - cos_i*sin_anomaly_plus_phase*sin_node); 
+                // y[(timestep*configs + iconf)*orbits.size() + iorb] = (float) (cos_i*cos_node*sin_anomaly_plus_phase +       cos_anomaly_plus_phase*sin_node); 
+                // z[(timestep*configs + iconf)*orbits.size() + iorb] = (float) (sin_i*sin_anomaly_plus_phase                                                 );
+                // h[(timestep*configs + iconf)*orbits.size() + iorb] = (float) (horizon(semi_major_axis / Earth::radius, alpha)                              );            
             }
         }
     }
@@ -103,7 +108,6 @@ int main() {
 
     random_fill(configs);
     fill_orbits(configs, sets, x, y, z, h);
-    // print_first(10, x, y, z);
 
     puts("\n");
     printf("%f MB for satellite positions\n", (3.0*sizeof(float)*sat_positions_size) / (1024.0*1024.0));
@@ -111,36 +115,32 @@ int main() {
     printf("%f MB for centroids\n",           (3.0*sizeof(float)*centroids.X.size()) / (1024.0*1024.0));
     puts("\n");
 
-    CUDA_Surface::Points3D gpu_pos, cpu_pos(sat_positions_size, x.data(), y.data(), z.data()),
-                           gpu_centroids, cpu_centroids(centroids.X.size(), 
-                                                        centroids.X.data(), centroids.Y.data(), centroids.Z.data()); 
-    CUDA_Surface::Surf gpu_surf, cpu_surf(surf_size, surf.data());
+    CUDA_Surface::Points3D gpu_pos,       cpu_pos(sat_positions_size, x.data(), y.data(), z.data()),
+                           gpu_centroids, cpu_centroids(centroids.X.size(), centroids.X.data(), centroids.Y.data(), centroids.Z.data()); 
+    CUDA_Surface::Points1D gpu_surf,      cpu_surf(surf_size, surf.data());
     
     printf("Try to allocate memory on GPU\n");
-
     gpu_pos.allocate(sat_positions_size);
     gpu_surf.allocate(surf_size);
     gpu_centroids.allocate(centroids.X.size());
-
     printf("Success\n");
 
     gpu_pos.load_from(cpu_pos);
     gpu_surf.load_from(cpu_surf);
     gpu_centroids.load_from(cpu_centroids);
-
     printf("Success load to GPU\n");
 
-    gpu_pos.save_to(cpu_pos);
-    gpu_surf.save_to(cpu_surf);
-    gpu_centroids.save_to(cpu_centroids);
+    float gpu_time = CUDA_Surface::compute_surface(gpu_surf, gpu_centroids, gpu_pos);
+    printf("Success. gpu time = %f\n", gpu_time);
 
-    printf("Success save from GPU\n");
-    // print_first(10, x, y, z);
+    // gpu_pos.save_to(cpu_pos);
+    // gpu_surf.save_to(cpu_surf);
+    // gpu_centroids.save_to(cpu_centroids);
+    // printf("Success save from GPU\n");
 
     gpu_pos.free();
     gpu_surf.free();
     gpu_centroids.free();
-
     printf("Memory was successfully deallocated\n");
     
     return 0;

@@ -32,9 +32,9 @@ namespace CUDA_Surface {
         void free();
         void load_from(const Points1D &cpu) const;
         void save_to(const Points1D &gpu) const;
-
-        // void compute_coverage(const Positions &cpu) const; 
     };
+
+    float compute_surface(Points1D &gpu_surface, const Points3D &gpu_centroids, const Points3D &gpu_pos); 
 }
 
 #endif
