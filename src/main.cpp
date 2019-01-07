@@ -109,17 +109,16 @@ int main() {
     random_fill(configs);
     fill_orbits(configs, sets, x, y, z, h);
 
-    puts("\n");
+    printf("\n");
     printf("%f MB for satellite positions\n", (3.0*sizeof(float)*sat_positions_size) / (1024.0*1024.0));
     printf("%f MB for surface flags\n",                    (sizeof(float)*surf_size) / (1024.0*1024.0));
     printf("%f MB for centroids\n",           (3.0*sizeof(float)*centroids.X.size()) / (1024.0*1024.0));
-    puts("\n");
+    printf("\n");
 
     CUDA_Surface::Points3D gpu_pos,       cpu_pos(sat_positions_size, x.data(), y.data(), z.data()),
                            gpu_centroids, cpu_centroids(centroids.X.size(), centroids.X.data(), centroids.Y.data(), centroids.Z.data()); 
     CUDA_Surface::Points1D gpu_surf,      cpu_surf(surf_size, surf.data());
     
-    printf("Try to allocate memory on GPU\n");
     gpu_pos.allocate(sat_positions_size);
     gpu_surf.allocate(surf_size);
     gpu_centroids.allocate(centroids.X.size());
