@@ -26,6 +26,7 @@ file(GLOB srcs "${PROJECT_SOURCE_DIR}/src/*.cpp"
 	           "${PROJECT_SOURCE_DIR}/src/*.h"
 	           "${PROJECT_SOURCE_DIR}/src/*.cu"
 	           "${PROJECT_SOURCE_DIR}/src/*.cuh")
+include_directories("/usr/local/cuda/include")
 add_executable(satellites ${srcs})
 set_property(TARGET satellites PROPERTY CUDA_STANDARD 11)
 
