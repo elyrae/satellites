@@ -19,7 +19,7 @@ namespace CUDA_Surface {
         void allocate(const int _size);
         void free();
         void load_from(const Points3D &cpu) const;
-        void save_to(const Points3D &cpu) const;
+        // void save_to(const Points3D &cpu) const;
     };
 
     struct Points1D {
@@ -31,7 +31,7 @@ namespace CUDA_Surface {
 
         void allocate(const int _size);
         void free();
-        void load_from(const Points1D &cpu) const;
+        // void load_from(const Points1D &cpu) const;
         void save_to(const Points1D &gpu) const;
     };
 

@@ -22,6 +22,36 @@ inline double horizon(const double H, const double alpha)
     return sin(delta + alpha_star);
 }
 
+void fill_orbits(const std::vector<Orbits::Constellation> &configurations, const Settings::Sets &settings, 
+                 std::vector<float> &x, std::vector<float> &y, std::vector<float> &z, std::vector<float> &h)
+{
+    const double alpha = MathStuff::degreesToRad(settings.coneAngle) / 2.0;
+    const size_t configs = configurations.size();
+    for (size_t iconf = 0; iconf < configs; ++iconf) {
+        Orbits::Constellation orbits = configurations[iconf];
+
+        for (size_t iorb = 0; iorb < orbits.size(); ++iorb) {
+            double semi_major_axis = orbits[iorb].semiMajorAxis();
+            double mean_angular_velocity = sqrt(Earth::mu / (semi_major_axis*semi_major_axis*semi_major_axis));        
+            double cos_i = cos(orbits[iorb].inclination);
+            double sin_i = sin(orbits[iorb].inclination);
+
+            for (size_t timestep = 0; timestep < TIMESTEPS; ++timestep) {
+                double t = timestep*settings.deltaT;
+                double cos_node = cos(orbits[iorb].ascendingNode - Earth::angularVelocity*t);
+                double sin_node = sin(orbits[iorb].ascendingNode - Earth::angularVelocity*t);
+                double cos_anomaly_plus_phase = cos(mean_angular_velocity*t + orbits[iorb].initialPhase);
+                double sin_anomaly_plus_phase = sin(mean_angular_velocity*t + orbits[iorb].initialPhase);
+
+                x[(timestep*orbits.size() + iorb)*configs + iconf] = (float) (      cos_node*cos_anomaly_plus_phase - cos_i*sin_anomaly_plus_phase*sin_node); 
+                y[(timestep*orbits.size() + iorb)*configs + iconf] = (float) (cos_i*cos_node*sin_anomaly_plus_phase +       cos_anomaly_plus_phase*sin_node); 
+                z[(timestep*orbits.size() + iorb)*configs + iconf] = (float) (sin_i*sin_anomaly_plus_phase                                                 );
+                h[(timestep*orbits.size() + iorb)*configs + iconf] = (float) (horizon(semi_major_axis / Earth::radius, alpha)                              );        
+            }
+        }
+    }
+}
+
 Surface::Surf Surface::compute(const Grid::Centroids& centroids, const Orbits::Constellation& orbits, const Settings::Sets& settings)
 {
     const double alpha = MathStuff::degreesToRad(settings.coneAngle) / 2.0;
@@ -380,8 +410,11 @@ double Surface::sumArea(const Grid::Areas& areas, const Surface::Surf& surface)
 {
     double area = 0.0;
     for (size_t i = 0; i < surface.size(); i++)
-        if (surface[i])
-            area = area + areas[i];
+        area += surface[i] ? areas[i] : 0.0;
+
+    // for (size_t i = 0; i < surface.size(); i++)
+    //     if (surface[i])
+    //         area = area + areas[i];
     return area;
 }
 

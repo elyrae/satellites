@@ -28,36 +28,6 @@ inline double horizon(const double H, const double alpha)
     // return sin(delta + alpha_star);
 }
 
-// void fill_orbits(const std::vector<Orbits::Constellation> &configurations, const Settings::Sets &settings, 
-//                  std::vector<float4> &p)
-// {
-//     // const double alpha = MathStuff::degreesToRad(settings.coneAngle) / 2.0;
-//     const size_t configs = configurations.size();
-//     for (size_t iconf = 0; iconf < configs; ++iconf) {
-//         Orbits::Constellation orbits = configurations[iconf];
-
-//         for (size_t iorb = 0; iorb < orbits.size(); ++iorb) {
-//             double semi_major_axis = orbits[iorb].semiMajorAxis();
-//             double mean_angular_velocity = sqrt(Earth::mu / (semi_major_axis*semi_major_axis*semi_major_axis));        
-//             double cos_i = cos(orbits[iorb].inclination);
-//             double sin_i = sin(orbits[iorb].inclination);
-
-//             for (size_t timestep = 0; timestep < TIMESTEPS; ++timestep) {
-//                 double t = timestep*settings.deltaT;
-//                 double cos_node = cos(orbits[iorb].ascendingNode - Earth::angularVelocity*t);
-//                 double sin_node = sin(orbits[iorb].ascendingNode - Earth::angularVelocity*t);
-//                 double cos_anomaly_plus_phase = cos(mean_angular_velocity*t + orbits[iorb].initialPhase);
-//                 double sin_anomaly_plus_phase = sin(mean_angular_velocity*t + orbits[iorb].initialPhase);
-
-//                 p[(timestep*orbits.size() + iorb)*configs + iconf].x = (float) (      cos_node*cos_anomaly_plus_phase - cos_i*sin_anomaly_plus_phase*sin_node); 
-//                 p[(timestep*orbits.size() + iorb)*configs + iconf].y = (float) (cos_i*cos_node*sin_anomaly_plus_phase +       cos_anomaly_plus_phase*sin_node); 
-//                 p[(timestep*orbits.size() + iorb)*configs + iconf].z = (float) (sin_i*sin_anomaly_plus_phase                                                 );
-//                 // h[(timestep*orbits.size() + iorb)*configs + iconf] = (float) (horizon(semi_major_axis / Earth::radius, alpha)                              );        
-//             }
-//         }
-//     }
-// }
-
 void fill_orbits(const std::vector<Orbits::Constellation> &configurations, const Settings::Sets &settings, 
                  std::vector<float> &x, std::vector<float> &y, std::vector<float> &z, std::vector<float> &h)
 {
@@ -106,28 +76,28 @@ void random_fill(std::vector<Orbits::Constellation> &configs)
     }
 }
 
-void print_first(const size_t n, const std::vector<float> &x, const std::vector<float> &y, const std::vector<float> &z)
-{
-    printf("x: ");
-    for (size_t i = 0; i < ((n < x.size()) ? n : x.size()); ++i)
-        printf("%5.2f ", x[i]);
-    printf("\ny: ");
-    for (size_t i = 0; i < ((n < x.size()) ? n : x.size()); ++i)
-        printf("%5.2f ", y[i]);
-    printf("\nz: ");
-    for (size_t i = 0; i < ((n < x.size()) ? n : x.size()); ++i)
-        printf("%5.2f ", z[i]);
-    printf("\n");
-}
+// void print_first(const size_t n, const std::vector<float> &x, const std::vector<float> &y, const std::vector<float> &z)
+// {
+//     printf("x: ");
+//     for (size_t i = 0; i < ((n < x.size()) ? n : x.size()); ++i)
+//         printf("%5.2f ", x[i]);
+//     printf("\ny: ");
+//     for (size_t i = 0; i < ((n < x.size()) ? n : x.size()); ++i)
+//         printf("%5.2f ", y[i]);
+//     printf("\nz: ");
+//     for (size_t i = 0; i < ((n < x.size()) ? n : x.size()); ++i)
+//         printf("%5.2f ", z[i]);
+//     printf("\n");
+// }
 
-void centroids_to_float3(const Grid::Centroids_f &c, std::vector<float4> &v)
-{
-    for (size_t i = 0; i < c.X.size(); ++i) {
-        v[i].x = c.X[i];
-        v[i].y = c.Y[i];
-        v[i].z = c.Z[i];
-    }
-}
+// void centroids_to_float3(const Grid::Centroids_f &c, std::vector<float4> &v)
+// {
+//     for (size_t i = 0; i < c.X.size(); ++i) {
+//         v[i].x = c.X[i];
+//         v[i].y = c.Y[i];
+//         v[i].z = c.Z[i];
+//     }
+// }
 
 int main() {
     Grid::Centroids_f centroids = Grid::readCentroids_f("../data/grids/centroids_5000.txt");
