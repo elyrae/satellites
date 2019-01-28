@@ -14,30 +14,30 @@ namespace Surface {
     using Surf = std::vector<int>;
     using Times = std::vector<double>;
 
+    inline double horizon(const double H, const double alpha);
+    inline double horizon(const double H, const double alpha, const double delta);
+
+    void fill_orbits(const std::vector<Orbits::Constellation> &configurations, 
+                     const Settings::Sets &settings, 
+                     std::vector<float> &x, std::vector<float> &y, std::vector<float> &z, std::vector<float> &h);
+
     // нахождение области покрытия группировкой
-    Surf compute(const Grid::Centroids& centroids,
-                 const Orbits::Constellation& orbits,
-                 const Settings::Sets& parameters = Settings::defaultParameters);
-//    Surf compute(const std::vector<Grid::Node>& centroids,
-//                 const Orbits::EllipticalConstellation& orbits,
-//                 const Settings& settings);
+    Surf compute(const Grid::Centroids &centroids, const Orbits::Constellation &orbits,
+                 const Settings::Sets &parameters = Settings::default_parameters);
 
     // поиск максимального времени ожидания
-    double computeTime(const Grid::Centroids& centroids,
-                       const Orbits::Constellation& orbits,
-                       const Settings::Sets& parameters = Settings::defaultParameters);
-//    double computeTime(const std::vector<Grid::Point>& centroids,
-//                       const Orbits::Constellation& orbits,
-//                       const Settings::Sets& parameters = Settings::defaultParameters);
+    double compute_time(const Grid::Centroids &centroids, const Orbits::Constellation &orbits,
+                        const Settings::Sets &parameters = Settings::default_parameters);
+
+    double compute_timeOMP(const Grid::Centroids &centroids, const Orbits::Constellation &orbits,
+                           const Settings::Sets &parameters = Settings::default_parameters);
 
     // максимальное время ожидания для каждой точки сетки
-    Times computeTimeFull(const Grid::Centroids& centroids,
-                          const Orbits::Constellation& orbits,
-                          const Settings::Sets& parameters = Settings::defaultParameters);
+    Times compute_time_full(const Grid::Centroids &centroids, const Orbits::Constellation &orbits,
+                            const Settings::Sets &parameters = Settings::default_parameters);
 
-    double sumArea(const Grid::Areas& areas, const Surf& surface);
-
-    void writeToTextFile(const Surf& surface, const std::string& filepath);
+    double sum_area(const Grid::Areas &areas, const Surf &surface);
+    void write(const Surf &surface, const std::string &filepath);
 }
 
 #endif // SATELLITESURFACE_H

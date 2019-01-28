@@ -22,17 +22,16 @@ set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 
-file(GLOB srcs "${PROJECT_SOURCE_DIR}/src/*.cpp" 
-	           "${PROJECT_SOURCE_DIR}/src/*.h"
-	           "${PROJECT_SOURCE_DIR}/src/*.cu"
-	           "${PROJECT_SOURCE_DIR}/src/*.cuh")
+file(GLOB srcs "${PROJECT_SOURCE_DIR}/src/*.cpp" "${PROJECT_SOURCE_DIR}/src/*.h"
+	           "${PROJECT_SOURCE_DIR}/src/*.cu"  "${PROJECT_SOURCE_DIR}/src/*.cuh")
 include_directories("/usr/local/cuda/include")
 add_executable(satellites ${srcs})
 set_property(TARGET satellites PROPERTY CUDA_STANDARD 11)
 
-# find_package(Threads REQUIRED)
-# find_package(OpenMP  REQUIRED)
-# target_link_libraries(Threads::Threads)
+find_package(Threads REQUIRED)
+find_package(OpenMP  REQUIRED)
+target_link_libraries(Threads::Threads)
+target_link_libraries(OpenMP::OpenMP_CXX)
 
 # if (OPENMP_FOUND)
 #     set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")

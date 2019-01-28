@@ -2,12 +2,9 @@
 #define EXAMPLES_H
 
 namespace Examples {
-    void exampleGridGeneration(const int iterations);
-
-    void exampleSurfaceComputationCircular();
-    // void exampleSurfaceComputationElliptical();
-
-    void SwarmOptimisation();
+    void grid_generation(const int iterations);
+    void surface_computation();
+    void swarm_optimisation();
 }
 
 #endif // EXAMPLES_H

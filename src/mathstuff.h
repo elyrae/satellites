@@ -1,17 +1,9 @@
 #ifndef MATHSTUFF_H
 #define MATHSTUFF_H
 
-#include <cmath>
-
-namespace MathStuff {
-    double degreesToRad(const double x);
-    // {
-    // 	return x * M_PI / 180.0;
-    // }
-    double radToDegrees(const double x);
-    // {
-    // 	return x * 180.0 / M_PI;
-    // }
+namespace Stuff {
+    double degrees_to_rad(const double x);
+    double rad_to_degrees(const double x);
 }
 
 #endif // MATHSTUFF_H

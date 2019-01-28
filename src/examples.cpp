@@ -5,32 +5,31 @@
 #include "grid.h"
 
 #include <iostream>
-// #include <random>
 #include <algorithm>
 
-void Examples::exampleSurfaceComputationCircular()
+void Examples::surface_computation()
 {
     // Чтение сетки
-    Grid::Centroids centroids = Grid::readCentroids("gridCentroidsNew.txt");
+    Grid::Centroids centroids = Grid::read_centroids("../data/grids/centroids_5000.txt");
 
     // Чтение и печать орбит
-    Orbits::Constellation orbits = Orbits::readCircularOrbits("circularOrbits.txt");
-    Orbits::printCircularOrbits(orbits);
+    Orbits::Constellation orbits = Orbits::read_circular_orbits("circular_orbits.txt");
+    Orbits::print_circular_orbits(orbits);
 
-    Settings::Sets settings = Settings::readSettings("settings.ini");
-    Settings::printSettings(settings);
+    Settings::Sets settings = Settings::read_settings("settings.ini");
+    Settings::print_settings(settings);
 
     // Вычисление области покрытия.
     //Surface::Surf surface = Surface::compute(centroids, orbits, settings);
 
     // Вычисление максимального времени ожидания
     clock_t start = clock();
-    double maxTime = Surface::computeTime(centroids, orbits, settings);
+    double max_time = Surface::compute_time(centroids, orbits, settings);
     clock_t end = clock();
 
     std::cout << "\nTiming: " << (end - start) / (CLOCKS_PER_SEC / 1000) << "ms.\n";
     //out << "Result: " << Surface::sumArea(sphereGrid, surface) << ")\n";
-    std::cout << "Max time: " << maxTime << "\n";
+    std::cout << "Max time: " << max_time << "\n";
     //Surface::writeToTextFile(surface, "computedSurface.txt");
 }
 
@@ -60,18 +59,18 @@ void Examples::exampleSurfaceComputationCircular()
 //    SatelliteSurface::writeToTextFile(surface, "computedSurface.txt");
 //}
 
-double penalty(const double a, const double x, const double b) {
-    return std::max(0.0, x - b)*std::max(0.0, x - b) + 
-           std::max(0.0, a - x)*std::max(0.0, a - x);
-}
+// double penalty(const double a, const double x, const double b) {
+//     return std::max(0.0, x - b)*std::max(0.0, x - b) + 
+//            std::max(0.0, a - x)*std::max(0.0, a - x);
+// }
 
 double ftime(const SwarmMethod::Point& orbitsVector)
 {
-    static const Grid::Centroids centroids = Grid::readCentroids("../data/grids/centroids_5000.txt");
-    static const Grid::Areas areas = Grid::readAreas("../data/grids/areas_5000.txt");
+    static const Grid::Centroids centroids = Grid::read_centroids("../data/grids/centroids_5000.txt");
+    static const Grid::Areas areas = Grid::read_areas("../data/grids/areas_5000.txt");
 
-    static Orbits::Constellation orbits = Orbits::readCircularOrbits("circularOrbits.txt");
-    static const Settings::Sets sets = Settings::readSettings("settings.ini");
+    static Orbits::Constellation orbits = Orbits::read_circular_orbits("circularOrbits.txt");
+    static const Settings::Sets sets = Settings::read_settings("settings.ini");
 
     // =======================================
 
@@ -82,25 +81,25 @@ double ftime(const SwarmMethod::Point& orbitsVector)
     // orbits[4].ascendingNode = orbitsVector[0];
     // orbits[5].ascendingNode = orbitsVector[0];
 
-    orbits[5].ascendingNode  = orbitsVector[0];
-    orbits[6].ascendingNode  = orbitsVector[0];
-    orbits[7].ascendingNode  = orbitsVector[0];
-    orbits[8].ascendingNode  = orbitsVector[0];
-    orbits[9].ascendingNode = orbitsVector[0];
+    orbits[5].ascending_node  = orbits_vector[0];
+    orbits[6].ascending_node  = orbits_vector[0];
+    orbits[7].ascending_node  = orbits_vector[0];
+    orbits[8].ascending_node  = orbits_vector[0];
+    orbits[9].ascending_node  = orbits_vector[0];
     // orbits[10].ascendingNode = orbitsVector[0];
 
-    orbits[10].ascendingNode = orbitsVector[1];
-    orbits[11].ascendingNode = orbitsVector[1];
-    orbits[12].ascendingNode = orbitsVector[1];
-    orbits[13].ascendingNode = orbitsVector[1];
-    orbits[14].ascendingNode = orbitsVector[1];
+    orbits[10].ascending_node = orbits_vector[1];
+    orbits[11].ascending_node = orbits_vector[1];
+    orbits[12].ascending_node = orbits_vector[1];
+    orbits[13].ascending_node = orbits_vector[1];
+    orbits[14].ascending_node = orbits_vector[1];
     // orbits[15].ascendingNode = orbitsVector[1];
 
-    orbits[15].ascendingNode = orbitsVector[2];
-    orbits[16].ascendingNode = orbitsVector[2];
-    orbits[17].ascendingNode = orbitsVector[2];
-    orbits[18].ascendingNode = orbitsVector[2];
-    orbits[19].ascendingNode = orbitsVector[2];
+    orbits[15].ascending_node = orbits_vector[2];
+    orbits[16].ascending_node = orbits_vector[2];
+    orbits[17].ascending_node = orbits_vector[2];
+    orbits[18].ascending_node = orbits_vector[2];
+    orbits[19].ascending_node = orbits_vector[2];
     // orbits[20].ascendingNode = orbitsVector[2];
 
     // ============================================
@@ -143,10 +142,10 @@ double ftime(const SwarmMethod::Point& orbitsVector)
     p += penalty(0.0, orbitsVector[5], 2.0*M_PI);
     p += penalty(0.0, orbitsVector[6], 2.0*M_PI);
 
-    p += penalty(MathStuff::degreesToRad(50.0), orbitsVector[7], MathStuff::degreesToRad(80.0));
-    p += penalty(MathStuff::degreesToRad(50.0), orbitsVector[8], MathStuff::degreesToRad(80.0));
-    p += penalty(MathStuff::degreesToRad(50.0), orbitsVector[9], MathStuff::degreesToRad(80.0));
-    p += penalty(MathStuff::degreesToRad(50.0), orbitsVector[10],MathStuff::degreesToRad(80.0));
+    p += penalty(MathStuff::degrees_to_rad(50.0), orbitsVector[7], MathStuff::degrees_to_rad(80.0));
+    p += penalty(MathStuff::degrees_to_rad(50.0), orbitsVector[8], MathStuff::degrees_to_rad(80.0));
+    p += penalty(MathStuff::degrees_to_rad(50.0), orbitsVector[9], MathStuff::degrees_to_rad(80.0));
+    p += penalty(MathStuff::degrees_to_rad(50.0), orbitsVector[10],MathStuff::degrees_to_rad(80.0));
 
     p += penalty(orbitsVector[0], orbitsVector[1], orbitsVector[2]);
 
@@ -169,57 +168,57 @@ double ftime(const SwarmMethod::Point& orbitsVector)
     return TStar;
 }
 
-void Examples::SwarmOptimisation()
-{
-    Orbits::Constellation orbits = Orbits::readCircularOrbits("circularOrbits.txt");
-    std::cout << "Loaded orbits:\n";
-    Orbits::printCircularOrbits(orbits);
+// void Examples::swarm_optimisation()
+// {
+//     Orbits::Constellation orbits = Orbits::read_circular_orbits("circularOrbits.txt");
+//     std::cout << "Loaded orbits:\n";
+//     Orbits::print_circular_orbits(orbits);
 
-    // задаём область поиска в методе роя частиц
-    SwarmMethod::Region region;
+//     // задаём область поиска в методе роя частиц
+//     SwarmMethod::Region region;
 
-    // восходящие узлы плоскостей. Восходящий узел одной из них положим равным нулю
-    region.push_back({0.0, 1.0*M_PI});
-    region.push_back({0.0, 1.0*M_PI});
-    region.push_back({0.0, 1.0*M_PI});
+//     // восходящие узлы плоскостей. Восходящий узел одной из них положим равным нулю
+//     region.push_back({0.0, 1.0*M_PI});
+//     region.push_back({0.0, 1.0*M_PI});
+//     region.push_back({0.0, 1.0*M_PI});
 
-    // начальные фазы
-    region.push_back({0.0, 2.0*M_PI});
-    region.push_back({0.0, 2.0*M_PI});
-    region.push_back({0.0, 2.0*M_PI});
-    region.push_back({0.0, 2.0*M_PI});
+//     // начальные фазы
+//     region.push_back({0.0, 2.0*M_PI});
+//     region.push_back({0.0, 2.0*M_PI});
+//     region.push_back({0.0, 2.0*M_PI});
+//     region.push_back({0.0, 2.0*M_PI});
 
-    // шаг начальной фазы для каждой плоскости
-    region.push_back({MathStuff::degreesToRad(50.0), MathStuff::degreesToRad(80.0)});
-    region.push_back({MathStuff::degreesToRad(50.0), MathStuff::degreesToRad(80.0)});
-    region.push_back({MathStuff::degreesToRad(50.0), MathStuff::degreesToRad(80.0)});
-    region.push_back({MathStuff::degreesToRad(50.0), MathStuff::degreesToRad(80.0)});
+//     // шаг начальной фазы для каждой плоскости
+//     region.push_back({MathStuff::degrees_to_rad(50.0), MathStuff::degrees_to_rad(80.0)});
+//     region.push_back({MathStuff::degrees_to_rad(50.0), MathStuff::degrees_to_rad(80.0)});
+//     region.push_back({MathStuff::degrees_to_rad(50.0), MathStuff::degrees_to_rad(80.0)});
+//     region.push_back({MathStuff::degrees_to_rad(50.0), MathStuff::degrees_to_rad(80.0)});
 
-    SwarmMethod::Parameters p;
-    p.swarmSize = 500;
-    p.omega = -0.32;
-    p.phi = 2.0;
-    p.maxIterations = 20;
+//     SwarmMethod::Parameters p;
+//     p.swarm_size = 500;
+//     p.omega = -0.32;
+//     p.phi = 2.0;
+//     p.max_iterations = 20;
 
-    const bool showIterations = true;
-    const bool writeSwarmToFile = false; 
-    const int runs = 1;
-    for (int run = 0; run < runs; run++) {
-        auto sol = SwarmMethod::optimize(ftime, region, p, showIterations, writeSwarmToFile);
-        std::cout << "\n";
-        std::cout.flush();
-    }
-    std::cout << "End of optimisation\n";
-}
+//     const bool show_iterations = true;
+//     const bool write_swarm = false; 
+//     const int runs = 1;
+//     for (int run = 0; run < runs; run++) {
+//         auto sol = SwarmMethod::optimize(ftime, region, p, show_iterations, write_swarm);
+//         std::cout << "\n";
+//         std::cout.flush();
+//     }
+//     std::cout << "End of optimisation\n";
+// }
 
-void Examples::exampleGridGeneration(const int iterations)
+void Examples::grid_generation(const int iterations)
 {
     auto grid = Grid::generate(iterations);
     auto centroids = Grid::centroids(grid);
     auto areas = Grid::areas(grid);
 
-    Grid::writeNodes(grid.nodes,    "gridNodesNew.txt");
-    Grid::writeCells(grid.cells,    "gridCellsNew.txt");
-    Grid::writeAreas(areas,         "gridAreasNew.txt");
-    Grid::writeCentroids(centroids, "gridCentroidsNew.txt");
+    Grid::write_nodes(grid.nodes,    "gridNodesNew.txt");
+    Grid::write_cells(grid.cells,    "gridCellsNew.txt");
+    Grid::write_areas(areas,         "gridAreasNew.txt");
+    Grid::write_centroids(centroids, "gridCentroidsNew.txt");
 }

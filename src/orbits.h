@@ -10,54 +10,44 @@ enum class OrbitType {Circular, Elliptical};
 
 namespace Orbits {
     struct CircularOrbit {
-        double ascendingNode; // долгота восходящего узла, рад
+        double ascending_node; // долгота восходящего узла, рад
         double inclination;   // наклонение, рад
-        double initialPhase;  // начальная фаза, рад
+        double initial_phase;  // начальная фаза, рад
 
         double height; // высота орбиты над уровнем моря, м
 
-        double semiMajorAxis() const; // большая полуось = радиус Земли + высота орбиты
-        double period()        const; // период, c
-        double meanMotion()    const; // средняя угловая скорость, рад/с
-    };
-
-    struct CircularOrbit_f {
-        float ascendingNode; // долгота восходящего узла, рад
-        float inclination;   // наклонение, рад
-        float initialPhase;  // начальная фаза, рад
-
-        float height; // высота орбиты над уровнем моря, м
-        
-        float semiMajorAxis() const; // большая полуось = радиус Земли + высота орбиты
-        float period()        const; // период, c
-        float meanMotion()    const; // средняя угловая скорость, рад/с
+        double semi_major_axis() const; // большая полуось = радиус Земли + высота орбиты
+        double period()          const; // период, c
+        double mean_motion()     const; // средняя угловая скорость, рад/с
     };
 
     struct EllipticalOrbit {
-        double ascendingNode;       // Долгота восходящего узла, рад
-        double inclination;         // Наклонение, рад
-        double argumentOfPeriapsis; // Аргумент перицентра, рад
+        double ascending_node;        // Долгота восходящего узла, рад
+        double inclination;           // Наклонение, рад
+        double argument_of_periapsis; // Аргумент перицентра, рад
 
-        double apocenter;           // Апоцентр, м
-        double pericenter;          // Перицентр, м
+        double apocenter;  // Апоцентр, м
+        double pericenter; // Перицентр, м
 
-        double meanAnomaly;         // Средняя аномалия, рад
+        double mean_anomaly; // Средняя аномалия, рад
 
-        double eccentricity()  const; // эксцентриситет
-        double semiMajorAxis() const; // большая полуось
-        double period()        const; // период обращения
+        double eccentricity()    const; // эксцентриситет
+        double semi_major_axis() const; // большая полуось
+        double period()          const; // период обращения
 
         double height(const double E) const; // высота спутника над уровнем моря от экс. аномалии
     };
 
-    using Constellation = std::vector<CircularOrbit>;
+    using Constellation  = std::vector<CircularOrbit>;
+    using ConstellationUnion = std::vector<Constellation>;
+
     using EllipticalConstellation = std::vector<EllipticalOrbit>;
 
-    double solveKeplersEquation(const double t, const EllipticalOrbit& orbit, const double eps = 1.0E-4);
-    double trueAnomaly(const double E, const double e);
+    double solve_keplers_equation(const double t, const EllipticalOrbit& orbit, const double eps = 1.0E-4);
+    double true_anomaly(const double E, const double e);
 
-    Constellation readCircularOrbits(const std::string& filepath);
-    void printCircularOrbits(const Constellation& orbits);
+    Constellation read_circular_orbits(const std::string& filepath);
+    void print_circular_orbits(const Constellation& orbits);
 
     // EllipticalConstellation readEllipticalOrbits(const QString& filepath);
     // void printEllipticalOrbits(const EllipticalConstellation& orbits);

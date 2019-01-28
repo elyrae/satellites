@@ -114,31 +114,31 @@ __global__ void reduce_time(float *surface, float *max_time)
     max_time[global_point*CONFIGURATIONS + global_conf] = m;
 }
 
-__global__ void reduce_time(float *surface, float *max_time)
-{
-    const int SURFACE_SIZE       = 5120;
-    const int CONFIGURATIONS     = 256;
-    const int TIMESTEPS          = 240;
+// __global__ void reduce_time(float *surface, float *max_time)
+// {
+//     const int SURFACE_SIZE       = 5120;
+//     const int CONFIGURATIONS     = 256;
+//     const int TIMESTEPS          = 240;
 
-    const int global_conf  = blockDim.x*blockIdx.x + threadIdx.x; // configuration 
-    const int global_point = blockDim.y*blockIdx.y + threadIdx.y; // point
+//     const int global_conf  = blockDim.x*blockIdx.x + threadIdx.x; // configuration 
+//     const int global_point = blockDim.y*blockIdx.y + threadIdx.y; // point
 
-    float surf = 0.0; 
-    float time = 0.0, m = 0.0, surface_result = 0.0; 
-    for (int timestep = 1; timestep < TIMESTEPS; timestep++) {
-        for (int iorb = 0; iorb < CONFIGURATION_SIZE; iorb++)
-        {
-            sat_x = x[(global_time*CONFIGURATION_SIZE + iorb)*CONFIGURATIONS + global_conf];
-            sat_y = y[(global_time*CONFIGURATION_SIZE + iorb)*CONFIGURATIONS + global_conf];
-            sat_z = z[(global_time*CONFIGURATION_SIZE + iorb)*CONFIGURATIONS + global_conf];
-            surface_result += (sat_x*cen_x + sat_y*cen_y + sat_z*cen_z > hor);
-        }
-        m    = (surf == 0.0) ? fmaxf(m, time) :       m;
-        time = (surf == 0.0) ? 0.0            : (time + 30.0);  
-    }
-    m = fmaxf(m, time);
-    max_time[global_point*CONFIGURATIONS + global_conf] = m;
-}
+//     float surf = 0.0; 
+//     float time = 0.0, m = 0.0, surface_result = 0.0; 
+//     for (int timestep = 1; timestep < TIMESTEPS; timestep++) {
+//         for (int iorb = 0; iorb < CONFIGURATION_SIZE; iorb++)
+//         {
+//             sat_x = x[(global_time*CONFIGURATION_SIZE + iorb)*CONFIGURATIONS + global_conf];
+//             sat_y = y[(global_time*CONFIGURATION_SIZE + iorb)*CONFIGURATIONS + global_conf];
+//             sat_z = z[(global_time*CONFIGURATION_SIZE + iorb)*CONFIGURATIONS + global_conf];
+//             surface_result += (sat_x*cen_x + sat_y*cen_y + sat_z*cen_z > hor);
+//         }
+//         m    = (surf == 0.0) ? fmaxf(m, time) :       m;
+//         time = (surf == 0.0) ? 0.0            : (time + 30.0);  
+//     }
+//     m = fmaxf(m, time);
+//     max_time[global_point*CONFIGURATIONS + global_conf] = m;
+// }
 
 __global__ void reduce_points(float *max_time)
 {

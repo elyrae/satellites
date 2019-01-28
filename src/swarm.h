@@ -9,16 +9,21 @@ namespace SwarmMethod {
     using Function = double(*)(const std::vector<double>&);
 
     using Point = std::vector<double>;
-    using Swarm = std::vector<Point>;
     using Region = std::vector<std::pair<double, double>>;
+
+    struct Swarm
+    {
+        std::vector<Point> p;
+        std::vector<Point> v;
+    };
 
     // Параметры метода роя частиц
     struct Parameters {
-        int swarmSize;
+        int swarm_size;
         double omega;
         double phi;
 
-        int maxIterations;
+        int max_iterations;
     };
 
     struct SwarmPosition
@@ -27,9 +32,9 @@ namespace SwarmMethod {
         double value;
     };
 
-    const Parameters defaults = { .swarmSize = 250, .omega = -0.32, .phi = 2.0, .maxIterations = 10};
+    const Parameters defaults = { .swarm_size = 250, .omega = -0.32, .phi = 2.0, .max_iterations = 10};
     SwarmPosition optimize(const Function F, const Region &reg, const Parameters &params = defaults,
-                           const bool debug = false, const bool writeSwarm = false);
+                           const bool debug = false, const bool write_swarm = false);
 }
 
 #endif // SWARM_H

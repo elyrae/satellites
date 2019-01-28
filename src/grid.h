@@ -18,40 +18,32 @@ namespace Grid {
         Cells cells;
     };
 
-    struct SphereGrid {
-        std::vector<Point> centroids;
-        std::vector<double> areas;
-        double area;
-    };
-
     struct Centroids {
         std::vector<double> X;
         std::vector<double> Y;
         std::vector<double> Z;
     };
-    struct Centroids_f {
-        std::vector<float> X;
-        std::vector<float> Y;
-        std::vector<float> Z;
-    };
 
+    struct SphereGrid {
+        Centroids centroids;
+        Areas areas;
+        double area;
+    };
 
     TriangularGrid generate(const int iterations);
 
-    std::vector<Point> centroids(const Grid::TriangularGrid& grid);
-    Areas areas(const Grid::TriangularGrid& grid);
+    Centroids centroids(const TriangularGrid &grid);
+    Areas areas(const TriangularGrid &grid);
 
-    void writeNodes(const std::vector<Point>& nodes, const std::string& file);
-    void writeCells(const std::vector<Cell>& cells, const std::string& file);
-    void writeCentroids(const std::vector<Point>& centroids, const std::string& file);
-    void writeAreas(const std::vector<double>& areas, const std::string& file);
+    void write_nodes(const Nodes &nodes, const std::string &file);
+    void write_cells(const Cells &cells, const std::string &file);
+    void write_centroids(const Centroids &centroids, const std::string &file);
+    void write_areas(const Areas &areas, const std::string &file);
 
-    Nodes     readNodes(const std::string& file);
-    Cells     readCells(const std::string& file);
-    Centroids readCentroids(const std::string& file);
-    Areas     readAreas(const std::string& file);
-
-    Centroids_f readCentroids_f(const std::string& file);
+    Nodes     read_nodes(const std::string& file);
+    Cells     read_cells(const std::string& file);
+    Centroids read_centroids(const std::string& file);
+    Areas     read_areas(const std::string& file);
 }
 
 #endif // GRID_H
