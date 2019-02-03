@@ -11,13 +11,13 @@ Settings::Sets Settings::read_settings(const std::string& ini_file)
     INIReader reader(ini_file);
     if (reader.ParseError() < 0) {
         std::cout << "Can't load '" << ini_file << "'\n";
-        return Settings::default_parameters;
+        return Settings::defaults;
     }
 
     parameters.cone_angle    = reader.GetReal("Satellites", "ConeAngle", 120.0);
     parameters.delta_t       = reader.GetReal("Orbits", "DeltaT", 60.0);
     parameters.time_duration = reader.GetReal("Orbits", "TimeDuration", 60.0) * 60.0;
-    return Settings::is_correct_sets(parameters) ? parameters : Settings::default_parameters;
+    return Settings::is_correct_sets(parameters) ? parameters : Settings::defaults;
 }
 
 void Settings::print_settings(const Settings::Sets& params)

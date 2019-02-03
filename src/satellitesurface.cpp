@@ -7,6 +7,35 @@
 #include <cmath>
 #include <algorithm>
 
+using Surface::Timegrid;
+
+Timegrid::Timegrid(const size_t cons_size, 
+                   const std::string &centroids_filepath, 
+                   const std::string &areas_filepath, 
+                   const std::string &settings_filepath)
+{
+    centroids = Grid::read_centroids(centroids_filepath);
+    areas = Grid::read_areas(areas_filepath);
+    sets = Settings::read_settings(settings_filepath);
+
+    orb.resize(cons_size);
+}
+
+double Timegrid::compute_max_time()
+{
+    return Surface::compute_time(centroids, orb, sets);
+}
+
+double Timegrid::compute_covered_area()
+{
+    return Surface::compute_time(centroids, orb, sets);
+}
+
+Orbits::Constellation &Timegrid::orbits()
+{
+    return orb;
+}
+
 // старая формула для вычисления горизонта без учета возвышения спутника над горизонтом
 inline double Surface::horizon(const double H, const double alpha)
 {
@@ -45,7 +74,7 @@ void Surface::fill_orbits(const Orbits::ConstellationUnion &configurations, cons
                 x[(timestep*orbits.size() + iorb)*configs + iconf] = (float) (      cos_node*cos_anomaly - cos_i*sin_anomaly*sin_node); 
                 y[(timestep*orbits.size() + iorb)*configs + iconf] = (float) (cos_i*cos_node*sin_anomaly +       cos_anomaly*sin_node); 
                 z[(timestep*orbits.size() + iorb)*configs + iconf] = (float) (sin_i*sin_anomaly);
-                h[(timestep*orbits.size() + iorb)*configs + iconf] = (float) horizon(semi_major_axis / Earth::radius, alpha);        
+                h[(timestep*orbits.size() + iorb)*configs + iconf] = (float) Surface::horizon(semi_major_axis / Earth::radius, alpha);        
             }
         }
     }
@@ -56,23 +85,22 @@ Surface::Surf Surface::compute(const Grid::Centroids& centroids, const Orbits::C
     const double alpha = Stuff::degrees_to_rad(settings.cone_angle) / 2.0;
     double cos_node        = 0.0, sin_node        = 0.0, x               = 0.0, y           = 0.0, z     = 0.0,
            cos_inclination = 0.0, sin_inclination = 0.0, cos_anomaly     = 0.0, sin_anomaly = 0.0, horiz = 0.0, 
-           t               = 0.0, true_anomaly    = 0.0, semi_major_axis = 0.0, mean_motion = 0.0;
+           t               = 0.0, semi_major_axis = 0.0, mean_motion = 0.0;
     Surface::Surf surface(centroids.X.size(), 0);
 
     for (const Orbits::CircularOrbit &orbit: orbits) {
         semi_major_axis = orbit.semi_major_axis();
         mean_motion = sqrt(Earth::mu / (semi_major_axis*semi_major_axis*semi_major_axis));
-        horiz = horizon(semi_major_axis / Earth::radius, alpha);
+        horiz = Surface::horizon(semi_major_axis / Earth::radius, alpha);
 
         cos_inclination = cos(orbit.inclination);
         sin_inclination = sin(orbit.inclination);
         t = 0.0;
         while (t < settings.time_duration + settings.delta_t/2.0) {
-            true_anomaly = mean_motion*t;
             cos_node = cos(orbit.ascending_node - Earth::angular_velocity*t);
             sin_node = sin(orbit.ascending_node - Earth::angular_velocity*t);
-            cos_anomaly = cos(true_anomaly + orbit.initial_phase);
-            sin_anomaly = sin(true_anomaly + orbit.initial_phase);
+            cos_anomaly = cos(mean_motion*t + orbit.initial_phase);
+            sin_anomaly = sin(mean_motion*t + orbit.initial_phase);
 
             x =                 cos_node*cos_anomaly - cos_inclination*sin_anomaly*sin_node;
             y = cos_inclination*cos_node*sin_anomaly +                 cos_anomaly*sin_node;
@@ -120,7 +148,7 @@ double Surface::compute_timeOMP(const Grid::Centroids& centroids, const Orbits::
                 x[j*orbits.size() + i] =       cos_node*cos_anomaly - cos_i*sin_anomaly*sin_node;
                 y[j*orbits.size() + i] = cos_i*cos_node*sin_anomaly +       cos_anomaly*sin_node;
                 z[j*orbits.size() + i] = sin_i*sin_anomaly;
-                hor[j*orbits.size() + i] = horizon(semi_major_axis / Earth::radius, alpha);            
+                hor[j*orbits.size() + i] = Surface::horizon(semi_major_axis / Earth::radius, alpha);            
             }
         }
 
@@ -213,14 +241,14 @@ Surface::Times Surface::compute_time_full(const Grid::Centroids& centroids, cons
             semi_major_axis = orbit.semi_major_axis();
             mean_angular_velocity = sqrt(Earth::mu / (semi_major_axis*semi_major_axis*semi_major_axis));
             true_anomaly = mean_angular_velocity*t;
-            horiz = horizon(semi_major_axis / Earth::radius, alpha);
+            horiz = Surface::horizon(semi_major_axis / Earth::radius, alpha);
 
             cos_i = cos(orbit.inclination);
             sin_i = sin(orbit.inclination);
             cos_node = cos(orbit.ascending_node - Earth::angular_velocity*t);
             sin_node = sin(orbit.ascending_node - Earth::angular_velocity*t);
-            cos_anomaly = cos(true_anomaly + orbit.initial_phase);
-            sin_anomaly = sin(true_anomaly + orbit.initial_phase);
+            cos_anomaly = cos(mean_angular_velocity*t + orbit.initial_phase);
+            sin_anomaly = sin(mean_angular_velocity*t + orbit.initial_phase);
 
             x =       cos_node*cos_anomaly - cos_i*sin_anomaly*sin_node;
             y = cos_i*cos_node*sin_anomaly +       cos_anomaly*sin_node;

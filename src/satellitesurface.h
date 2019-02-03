@@ -14,6 +14,23 @@ namespace Surface {
     using Surf = std::vector<int>;
     using Times = std::vector<double>;
 
+    class Timegrid {
+        Grid::Centroids centroids;
+        Grid::Areas areas;
+        Settings::Sets sets;
+
+        Orbits::Constellation orb;
+
+    public:
+        Timegrid(const size_t cons_size, const std::string &centroids_filepath, 
+                                         const std::string &areas_filepath,
+                                         const std::string &settings_filepath);
+        double compute_max_time();
+        double compute_covered_area();
+
+        Orbits::Constellation &orbits();
+    };
+
     inline double horizon(const double H, const double alpha);
     inline double horizon(const double H, const double alpha, const double delta);
 
@@ -23,18 +40,17 @@ namespace Surface {
 
     // нахождение области покрытия группировкой
     Surf compute(const Grid::Centroids &centroids, const Orbits::Constellation &orbits,
-                 const Settings::Sets &parameters = Settings::default_parameters);
+                 const Settings::Sets &parameters = Settings::defaults);
 
     // поиск максимального времени ожидания
     double compute_time(const Grid::Centroids &centroids, const Orbits::Constellation &orbits,
-                        const Settings::Sets &parameters = Settings::default_parameters);
-
+                        const Settings::Sets &parameters = Settings::defaults);
     double compute_timeOMP(const Grid::Centroids &centroids, const Orbits::Constellation &orbits,
-                           const Settings::Sets &parameters = Settings::default_parameters);
+                           const Settings::Sets &parameters = Settings::defaults);
 
     // максимальное время ожидания для каждой точки сетки
     Times compute_time_full(const Grid::Centroids &centroids, const Orbits::Constellation &orbits,
-                            const Settings::Sets &parameters = Settings::default_parameters);
+                            const Settings::Sets &parameters = Settings::defaults);
 
     double sum_area(const Grid::Areas &areas, const Surf &surface);
     void write(const Surf &surface, const std::string &filepath);

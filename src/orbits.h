@@ -17,7 +17,7 @@ namespace Orbits {
         double height; // высота орбиты над уровнем моря, м
 
         double semi_major_axis() const; // большая полуось = радиус Земли + высота орбиты
-        double period()          const; // период, c
+        double period()          const; // период орбиты, c
         double mean_motion()     const; // средняя угловая скорость, рад/с
     };
 
