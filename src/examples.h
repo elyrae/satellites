@@ -3,7 +3,13 @@
 
 namespace Examples {
     void grid_generation(const int iterations);
+    
+    void time_computation();
+    void time_histogram();
+    void compare_different_grids();
+    
     void surface_computation();
+
     void swarm_optimisation();
 }
 

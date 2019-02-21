@@ -24,13 +24,13 @@ namespace Grid {
         std::vector<double> Z;
     };
 
-    struct SphereGrid {
-        Centroids centroids;
-        Areas areas;
-        double area;
-    };
+    // struct SphereGrid {
+    //     Centroids centroids;
+    //     Areas areas;
+    //     double area;
+    // };
 
-    TriangularGrid generate(const int iterations);
+    TriangularGrid generate(const size_t iterations);
 
     Centroids centroids(const TriangularGrid &grid);
     Areas areas(const TriangularGrid &grid);

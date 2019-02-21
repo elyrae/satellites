@@ -17,22 +17,20 @@ namespace Surface {
     class Timegrid {
         Grid::Centroids centroids;
         Grid::Areas areas;
+        double area;
+
         Settings::Sets sets;
-
-        Orbits::Constellation orb;
-
+        Settings::Sets sets_for_area;
+        Orbits::Constellation def_constellation;
     public:
-        Timegrid(const size_t cons_size, const std::string &centroids_filepath, 
-                                         const std::string &areas_filepath,
-                                         const std::string &settings_filepath);
-        double compute_max_time();
-        double compute_covered_area();
+        Timegrid(const size_t grid_iterations, const Orbits::Constellation &def_cons, const Settings::Sets &_sets);
+        double compute_max_time(const Orbits::Constellation &orb)     const;
+        double compute_covered_area(const Orbits::Constellation &orb) const;
 
-        Orbits::Constellation &orbits();
+        const Orbits::Constellation &default_constellation() const { return def_constellation; };
+        const Settings::Sets &settings()                     const { return sets; };
+        double full_area()                                   const { return area; };
     };
-
-    inline double horizon(const double H, const double alpha);
-    inline double horizon(const double H, const double alpha, const double delta);
 
     void fill_orbits(const std::vector<Orbits::Constellation> &configurations, 
                      const Settings::Sets &settings, 
@@ -41,19 +39,21 @@ namespace Surface {
     // нахождение области покрытия группировкой
     Surf compute(const Grid::Centroids &centroids, const Orbits::Constellation &orbits,
                  const Settings::Sets &parameters = Settings::defaults);
+    double compute_area(const Grid::Centroids &centroids, const Grid::Areas &areas, const Orbits::Constellation &orbits,
+                        const Settings::Sets &parameters = Settings::defaults);
 
     // поиск максимального времени ожидания
     double compute_time(const Grid::Centroids &centroids, const Orbits::Constellation &orbits,
                         const Settings::Sets &parameters = Settings::defaults);
-    double compute_timeOMP(const Grid::Centroids &centroids, const Orbits::Constellation &orbits,
-                           const Settings::Sets &parameters = Settings::defaults);
+    // double compute_timeOMP(const Grid::Centroids &centroids, const Orbits::Constellation &orbits,
+    //                        const Settings::Sets &parameters = Settings::defaults);
 
     // максимальное время ожидания для каждой точки сетки
     Times compute_time_full(const Grid::Centroids &centroids, const Orbits::Constellation &orbits,
                             const Settings::Sets &parameters = Settings::defaults);
 
-    double sum_area(const Grid::Areas &areas, const Surf &surface);
     void write(const Surf &surface, const std::string &filepath);
+    void write(const Times &time,   const std::string &filepath);
 }
 
 #endif // SATELLITESURFACE_H

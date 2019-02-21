@@ -31,7 +31,7 @@ SwarmMethod::SwarmPosition Optimizer::optimize(const SwarmMethod::TimeFunction F
     SwarmMethod::Swarm swarm(params.swarm_size, reg);
 
     clock_t start = clock();
-    swarm.update_best_position(tg, F);
+    swarm.update_best_position(tg, F, true);
     clock_t end = clock();
     if (params.debug)
         print_position(swarm.best_position(), 0, to_ms(start, end));
@@ -65,13 +65,13 @@ Swarm::Swarm(const size_t swarm_size, const Region &reg)
         vel[i].resize(reg.size());
         
         for (size_t j = 0; j < pos[i].size(); j++) {
-            pos[i][j] = Stuff::random(reg[j].first,  reg[j].second);
-            vel[i][j] = abs(reg[j].first - reg[j].second)*Stuff::random(-1.0, 1.0);
+            pos[i][j] = Stuff::random(reg[j].first, reg[j].second);
+            vel[i][j] = 0.0; // abs(reg[j].first - reg[j].second)*Stuff::random(-1.0, 1.0);
         }
     }
 }
 
-void Swarm::update_best_position(Surface::Timegrid &tg, const SwarmMethod::TimeFunction F)
+void Swarm::update_best_position(Surface::Timegrid &tg, const SwarmMethod::TimeFunction F, const bool rewrite)
 {
     SwarmMethod::SwarmPosition candidate;
     candidate.pos = pos[0];
@@ -84,7 +84,11 @@ void Swarm::update_best_position(Surface::Timegrid &tg, const SwarmMethod::TimeF
             candidate.value = current_f;
         }
     }
-    best = candidate;
+
+    if (rewrite)
+        best = candidate;
+    else if (candidate.value < best.value)
+        best = candidate;
 }
 
 void Swarm::update(const SwarmMethod::Parameters &params)

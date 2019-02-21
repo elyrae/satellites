@@ -48,7 +48,7 @@ namespace SwarmMethod {
         SwarmPosition best;
     public:
         Swarm(const size_t swarm_size, const Region &reg);
-        void update_best_position(Surface::Timegrid &tg, const TimeFunction F);
+        void update_best_position(Surface::Timegrid &tg, const TimeFunction F, const bool rewrite = false);
         void update(const SwarmMethod::Parameters &params);
 
         SwarmPosition best_position() const { return best; }

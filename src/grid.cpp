@@ -53,7 +53,7 @@ void normalize(Grid::Centroids &p)
 }
 
 // Создание треугольной сетки с количеством итераций iterations
-Grid::TriangularGrid Grid::generate(const int iterations)
+Grid::TriangularGrid Grid::generate(const size_t iterations)
 {
     Grid::TriangularGrid grid;
     grid.nodes = initial_nodes;
@@ -62,7 +62,7 @@ Grid::TriangularGrid Grid::generate(const int iterations)
     Grid::Cells new_cells;
 
     int k = 0;
-    for (int it = 1; it <= iterations; it++)
+    for (size_t it = 1; it <= iterations; it++)
     {
         new_cells.clear();
         for (const Grid::Cell &cell: grid.cells) {
@@ -111,7 +111,9 @@ Grid::Areas Grid::areas(const Grid::TriangularGrid &grid)
 
     for (const Grid::Cell &cell: grid.cells) {
         ab = 0.0; bc = 0.0; ac = 0.0;
-        a = grid.nodes[cell[0]]; b = grid.nodes[cell[1]]; c = grid.nodes[cell[2]];
+        a = grid.nodes[cell[0]]; 
+        b = grid.nodes[cell[1]]; 
+        c = grid.nodes[cell[2]];
         for (int i = 0; i < 3; i++) {
             ab += (b[i] - a[i])*(b[i] - a[i]);
             bc += (c[i] - b[i])*(c[i] - b[i]);
