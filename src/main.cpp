@@ -6,5 +6,6 @@ int main() {
     // Examples::time_histogram();
     // Examples::compare_different_grids();
     Examples::swarm_optimisation();
+    // Examples::destroy_satellites();
     return 0;
 }

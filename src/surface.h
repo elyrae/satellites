@@ -9,12 +9,14 @@
 
 namespace Surface {
     // Каждому треугольнику сетки ставим в соответствие флаг "покрыт связью"
-    // Использование аж целого инта связано с заметно большей скоростью счета
+    // Использование аж целого инта связано с большей скоростью счета
     // Подумаю еще, как сделать получше
     using Surf = std::vector<int>;
     using Times = std::vector<double>;
 
     class Timegrid {
+        const double area_delta_t = 240.0;
+
         Grid::Centroids centroids;
         Grid::Areas areas;
         double area;
@@ -30,6 +32,8 @@ namespace Surface {
         const Orbits::Constellation &default_constellation() const { return def_constellation; };
         const Settings::Sets &settings()                     const { return sets; };
         double full_area()                                   const { return area; };
+
+        size_t size() const { return centroids.X.size(); }
     };
 
     void fill_orbits(const std::vector<Orbits::Constellation> &configurations, 

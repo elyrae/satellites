@@ -1,13 +1,13 @@
-#include "satellitesurface.h"
+#include "surface.h"
 #include "earth.h"
 #include "messages.h"
-#include "mathstuff.h"
+#include "stuff.h"
 #include "grid.h"
 
 #include <fstream>
 #include <cmath>
 #include <algorithm>
-#include <iostream>
+// #include <iostream>
 
 using Surface::Timegrid;
 
@@ -17,12 +17,11 @@ Timegrid::Timegrid(const size_t grid_iterations, const Orbits::Constellation &de
 
     sets = _sets;
     sets_for_area = _sets;
-    sets_for_area.delta_t = 240.0;
+    sets_for_area.delta_t = area_delta_t;
 
     Grid::TriangularGrid grid = Grid::generate(grid_iterations);
     centroids = Grid::centroids(grid);
     areas = Grid::areas(grid);
-    std::cout << "Timegrid: " << centroids.X.size() << "\n";
 
     area = 0.0;
     for (const double a: areas)
@@ -156,7 +155,7 @@ double Surface::compute_area(const Grid::Centroids &centroids, const Grid::Areas
     return area;    
 }
 
-// double Surface::compute_timeOMP(const Grid::Centroids &centroids, const Orbits::Constellation &orbits, const Settings::Sets &settings)
+// double Surface::compute_time_parallel(const Grid::Centroids &centroids, const Orbits::Constellation &orbits, const Settings::Sets &settings)
 // {
 //     const double alpha = Stuff::degrees_to_rad(settings.cone_angle) / 2.0;
 
@@ -188,9 +187,9 @@ double Surface::compute_area(const Grid::Centroids &centroids, const Grid::Areas
 //                 double cos_anomaly = cos(mean_angular_velocity*t + orbits[i].initial_phase);
 //                 double sin_anomaly = sin(mean_angular_velocity*t + orbits[i].initial_phase);
 
-//                 x[j*orbits.size() + i] =       cos_node*cos_anomaly - cos_i*sin_anomaly*sin_node;
-//                 y[j*orbits.size() + i] = cos_i*cos_node*sin_anomaly +       cos_anomaly*sin_node;
-//                 z[j*orbits.size() + i] = sin_i*sin_anomaly;
+//                   x[j*orbits.size() + i] =       cos_node*cos_anomaly - cos_i*sin_anomaly*sin_node;
+//                   y[j*orbits.size() + i] = cos_i*cos_node*sin_anomaly +       cos_anomaly*sin_node;
+//                   z[j*orbits.size() + i] = sin_i*sin_anomaly;
 //                 hor[j*orbits.size() + i] = Surface::horizon(semi_major_axis / Earth::radius, alpha);            
 //             }
 //         }

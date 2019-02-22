@@ -4,7 +4,7 @@
 #include <vector>
 #include <utility>
 
-#include "satellitesurface.h"
+#include "surface.h"
 
 namespace SwarmMethod {
     using TimeFunction = double (*)(Surface::Timegrid &, const std::vector<double> &);

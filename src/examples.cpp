@@ -1,6 +1,6 @@
 #include "examples.h"
-#include "satellitesurface.h"
-#include "mathstuff.h"
+#include "surface.h"
+#include "stuff.h"
 #include "swarm.h"
 #include "grid.h"
 
@@ -31,17 +31,14 @@ void Examples::time_computation()
 
 void Examples::time_histogram()
 {
-    // Чтение сетки
     Grid::Centroids centroids = Grid::read_centroids("../data/grids/centroids_80000.txt");
 
-    // Чтение и печать орбит
     Orbits::Constellation orbits = Orbits::read_circular_orbits("circular_orbits.txt");
     Orbits::print_circular_orbits(orbits);
 
     Settings::Sets settings = Settings::read_settings("settings.ini");
     Settings::print_settings(settings);
 
-    // Вычисление максимального времени ожидания
     settings.elevation_angle = 0.0;
     Surface::Times elev0_1500  = Surface::compute_time_full(centroids, orbits, settings);
     settings.elevation_angle = 10.0;
@@ -62,10 +59,8 @@ void Examples::time_histogram()
 
 void Examples::surface_computation()
 {
-    // Чтение сетки
     Grid::Centroids centroids = Grid::read_centroids("../data/grids/centroids_5000.txt");
 
-    // Чтение и печать орбит
     Orbits::Constellation orbits = Orbits::read_circular_orbits("circular_orbits.txt");
     Orbits::print_circular_orbits(orbits);
 
@@ -73,9 +68,11 @@ void Examples::surface_computation()
     Settings::print_settings(settings);
 
     // Вычисление области покрытия.
+    clock_t start = clock();
     Surface::Surf surface = Surface::compute(centroids, orbits, settings);
+    clock_t end = clock();
 
-    // std::cout << "\nTiming: " << (end - start) / (CLOCKS_PER_SEC / 1000) << "ms.\n";
+    std::cout << "\nTiming: " << (end - start) / (CLOCKS_PER_SEC / 1000) << "ms.\n";
     // out << "Result: " << Surface::sumArea(sphereGrid, surface) << ")\n";
     //Surface::writeToTextFile(surface, "computedSurface.txt");
 }
@@ -86,10 +83,6 @@ void Examples::compare_different_grids()
     Grid::Centroids centroids;
     Surface::Times times;
 
-    // Чтение сетки
-    // Grid::Centroids centroids = Grid::read_centroids("../data/grids/centroids_5000.txt");
-
-    // Чтение и печать орбит
     Orbits::Constellation orbits = Orbits::read_circular_orbits("circular_orbits.txt");
     Orbits::print_circular_orbits(orbits);
 
@@ -107,6 +100,32 @@ void Examples::compare_different_grids()
             out << times[i] << " ";
         out << "\n"; 
     }    
+}
+
+void Examples::destroy_satellites()
+{
+    Grid::TriangularGrid grid;
+    Grid::Centroids centroids;
+
+    const size_t iters = 3;
+    centroids = Grid::centroids(Grid::generate(iters));
+    std::cout << centroids.X.size() << " centroids\n";
+
+    Orbits::Constellation orbits = Orbits::read_circular_orbits("circular_orbits.txt");
+    Orbits::print_circular_orbits(orbits);
+
+    Settings::Sets settings = Settings::read_settings("settings.ini");
+    Settings::print_settings(settings);
+
+    auto full_constellation = orbits;
+    std::cout << "Full constellation: " << Surface::compute_time(centroids, orbits, settings) << "\n";
+    for (size_t i = 0; i < orbits.size(); i++) {
+        orbits.erase(orbits.begin() + i);
+        Orbits::print_circular_orbits(orbits);
+
+        std::cout << i << ": " << Surface::compute_time(centroids, orbits, settings) << "\n\n";
+        orbits = full_constellation;
+    }
 }
 
 double penalty(const double a, const double x, const double b) {
@@ -181,7 +200,6 @@ void Examples::swarm_optimisation()
 {
     // задаём область поиска в методе роя частиц
     SwarmMethod::Region region;
-    // восходящие узлы плоскостей. Восходящий узел одной из них положим равным нулю
     region.push_back({0.0, M_PI});
     region.push_back({0.0, M_PI});
     region.push_back({0.0, M_PI});
@@ -200,7 +218,7 @@ void Examples::swarm_optimisation()
 
     // ##############################
     SwarmMethod::Parameters swarm_params;
-    swarm_params.swarm_size = 50000;
+    swarm_params.swarm_size = 5000;
     swarm_params.omega = SwarmMethod::defaults.omega;
     swarm_params.phi = SwarmMethod::defaults.phi;
 

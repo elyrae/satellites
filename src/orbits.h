@@ -11,7 +11,7 @@ enum class OrbitType {Circular, Elliptical};
 namespace Orbits {
     struct CircularOrbit {
         double ascending_node; // долгота восходящего узла, рад
-        double inclination;   // наклонение, рад
+        double inclination;    // наклонение, рад
         double initial_phase;  // начальная фаза, рад
 
         double height; // высота орбиты над уровнем моря, м
@@ -31,11 +31,11 @@ namespace Orbits {
 
         double mean_anomaly; // Средняя аномалия, рад
 
-        double eccentricity()    const; // эксцентриситет
-        double semi_major_axis() const; // большая полуось
-        double period()          const; // период обращения
+        double eccentricity()    const; // Эксцентриситет
+        double semi_major_axis() const; // Большая полуось
+        double period()          const; // Период обращения
 
-        double height(const double E) const; // высота спутника над уровнем моря от экс. аномалии
+        double height(const double E) const; // Высота спутника над уровнем моря от экс. аномалии
     };
 
     using Constellation  = std::vector<CircularOrbit>;
@@ -43,14 +43,14 @@ namespace Orbits {
 
     using EllipticalConstellation = std::vector<EllipticalOrbit>;
 
-    double solve_keplers_equation(const double t, const EllipticalOrbit& orbit, const double eps = 1.0E-4);
+    double solve_keplers_equation(const double t, const EllipticalOrbit &orbit, const double eps = 1.0E-4);
     double true_anomaly(const double E, const double e);
 
-    Constellation read_circular_orbits(const std::string& filepath);
-    void print_circular_orbits(const Constellation& orbits);
+    Constellation read_circular_orbits(const std::string &filepath);
+    void print_circular_orbits(const Constellation &orbits);
 
-    // EllipticalConstellation readEllipticalOrbits(const QString& filepath);
-    // void printEllipticalOrbits(const EllipticalConstellation& orbits);
+    // EllipticalConstellation readEllipticalOrbits(const QString &filepath);
+    // void printEllipticalOrbits(const EllipticalConstellation &orbits);
 }
 
 #endif // ORBITS_H

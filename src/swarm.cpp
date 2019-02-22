@@ -1,5 +1,5 @@
 #include "swarm.h"
-#include "mathstuff.h"
+#include "stuff.h"
 
 #include <fstream>
 #include <random>

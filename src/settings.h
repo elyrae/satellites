@@ -5,11 +5,11 @@
 
 namespace Settings {
     struct Sets {
-        double cone_angle;    // Угол раствора конуса связи при спутнике
-        double elevation_angle;
+        double cone_angle;      // Угол раствора конуса связи при спутниках
+        double elevation_angle; // Угол возвышения спутников над горизонтом
 
-        double time_duration; // Время счета
-        double delta_t;       // Шаг расчета
+        double time_duration; // Время счета, с
+        double delta_t;       // Шаг расчета, с
     };
 
     const Sets defaults = { .cone_angle = 120.0, .elevation_angle = 0.0, .time_duration = 3600.0, .delta_t = 120.0};
